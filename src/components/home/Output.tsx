@@ -10,7 +10,7 @@ const Output = () => {
   const { output, loading } = useContext(BioContext);
 
   return (
-    <div className="relative flex min-h-[50vh] mt-2 flex-col rounded-xl bg-muted/50 backdrop-blur-sm overflow-hidden border border-primary/5">
+    <div className="relative flex min-h-[50vh] mt-2 flex-col rounded-xl bg-muted/50 backdrop-blur-sm overflow-hidden border border-primary/5 shadow-lg">
       {loading && (
         <BorderBeam
           size={1200}
@@ -27,19 +27,17 @@ const Output = () => {
         <Skeleton className="w-full h-full" />
       ) : (
         <ul className="flex flex-col items-start justify-start space-y-8 sm:space-y-12 p-8 py-12 xs:p-8 xs:py-12 sm:p-12 lg:p-16">
-          {output?.data.map((data, index) => {
-            return (
-              <li
-                key={index}
-                className="w-full text-sm xs:text-base border border-primary/20 rounded-md p-4 relative bg-background rounded-br-none"
-              >
-                {data.bio}
-                <span className="absolute top-[99%] right-0">
-                  <CopyLabel text={data.bio} />
-                </span>
-              </li>
-            );
-          })}
+          {output?.data.map((data, index) => (
+            <li
+              key={index}
+              className="w-full text-sm xs:text-base border border-primary/20 rounded-md p-4 relative bg-background rounded-br-none hover:bg-primary/10 transition duration-300 ease-in-out"
+            >
+              {data.bio}
+              <span className="absolute top-[99%] right-0">
+                <CopyLabel text={data.bio} />
+              </span>
+            </li>
+          ))}
         </ul>
       )}
     </div>
