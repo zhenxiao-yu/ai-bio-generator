@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "AI Bio Generator Built using Next.js by Zhenxiao Yu",
   description:
     "Generate your perfect social media bio with the help of AI, crafted by Zhenxiao Yu. This innovative application, built using Next.js, leverages advanced AI algorithms to create personalized and compelling bios for your social media profiles. Simply answer a few questions, and our AI will generate a bio that truly represents you. Whether for professional networking, personal branding, or social connections, this tool ensures your online presence is impactful and authentic.",
-  author: "Zhenxiao Yu",
+  authors: [{ name: "Zhenxiao Yu" }],
   keywords: [
     "AI Bio Generator",
     "Next.js",
@@ -22,9 +22,8 @@ export const metadata: Metadata = {
     "Personal Branding",
     "Professional Networking",
   ],
-  creationDate: "2024-08-01",
-  version: "1.0.0",
 };
+
 
 export default function Home() {
   return (
