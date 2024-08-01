@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shadcn-ui/button";
 import {
   Form,
   FormControl,
@@ -12,21 +12,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/shadcn-ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shadcn-ui/select";
 import MetaIcon from "../icons/Meta";
 import MistralIcon from "../icons/Mistral";
-import { Slider } from "../ui/slider";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { Slider } from "../shadcn-ui/slider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn-ui/tooltip";
 import { Info, Loader2 } from "lucide-react";
-import { Textarea } from "../ui/textarea";
-import { Switch } from "../ui/switch";
+import { Textarea } from "../shadcn-ui/textarea";
+import { Switch } from "../shadcn-ui/switch";
 import { generateBio } from "@/app/actions";
 import { BioContext } from "@/context/BioContext";
 

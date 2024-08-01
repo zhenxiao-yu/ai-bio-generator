@@ -1,7 +1,7 @@
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/shadcn-ui/tooltip";
 import GridPattern from "@/components/magicui/grid-pattern";
 
 export default function RootLayout({

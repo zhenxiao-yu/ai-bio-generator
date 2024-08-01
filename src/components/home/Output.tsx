@@ -1,9 +1,9 @@
 "use client";
 import React, { useContext } from "react";
-import { Badge } from "../ui/badge";
+import { Badge } from "../shadcn-ui/badge";
 import { BorderBeam } from "../magicui/border-beam";
 import { BioContext } from "@/context/BioContext";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../shadcn-ui/skeleton";
 import CopyLabel from "./CopyLabel";
 
 const Output = () => {

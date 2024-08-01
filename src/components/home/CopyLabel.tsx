@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../shadcn-ui/button";
 
 const CopyLabel = ({ text }: { text: string }) => {
   const [label, setLabel] = useState("copy");
