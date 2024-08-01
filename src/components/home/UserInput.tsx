@@ -101,6 +101,14 @@ const UserInput = () => {
     }
   }
 
+  // Fill in example content
+  const fillExampleContent = () => {
+    form.setValue(
+      "content",
+      "A passionate software engineer with a love for crafting innovative digital solutions. Experienced in full-stack development and driven by a desire to create impactful user experiences. Always eager to learn and explore new technologies."
+    );
+  };
+
   return (
     <div className="relative flex flex-col items-start gap-8">
       <Form {...form}>
@@ -239,6 +247,14 @@ const UserInput = () => {
                   <FormItem>
                     <FormLabel className="flex items-center justify-between pb-2">
                       About Yourself
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={fillExampleContent}
+                        className="ml-2"
+                      >
+                        Fill Example
+                      </Button>
                     </FormLabel>
                     <FormControl>
                       <Textarea
