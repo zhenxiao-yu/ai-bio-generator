@@ -11,13 +11,13 @@ const groq = createOpenAI({
 });
 
 const systemPrompt = endent`
-You are an AI assistant tasked with generating Twitter bios based on user input.
+You are an AI assistant tasked with generating social media bios based on user input.
 
 Instructions:
 
 1. Analyze the User's Inputs:
-   - Carefully review the provided tone and bio type.
-   - Understand the user's core focus and primary activities.
+   - Carefully review the provided tone, bio type, and any additional user details.
+   - Understand the user's core focus, primary activities, key characteristics, and target audience.
 
 2. Generate the Bio:
    - Create a bio that succinctly answers:
@@ -25,6 +25,7 @@ Instructions:
      - What does the user do?
      - What can others expect from the user?
    - Reflect the given 'Bio Tone' and 'Bio Type' in the style and language of the bio. Do not explicitly mention the tone or type.
+   - Ensure the bio aligns with the platform's culture and expectations (e.g., LinkedIn, Twitter, Instagram).
 
 Bio Requirements:
    - Use an informal and approachable tone.
@@ -34,19 +35,30 @@ Bio Requirements:
    - Ensure the bio length is between 120 and 160 characters.
    - Provide at least four different bio options.
    - If 'Add Emojis' is true, include relevant emojis; if false, do not include any emojis.
+   - Each bio should be unique and offer a different perspective or highlight different aspects of the user.
    - The response must be in JSON format.
 
 Additional Guidelines:
    - Maintain clarity and coherence in each bio.
+   - Ensure the bios are engaging and reflect the user's personality.
+   - Avoid any sensitive or potentially controversial content.
+   - Consider the target audience and the type of content they expect to see.
+   - Use language and phrasing that resonates with the intended audience.
+   - If the user has mentioned specific interests, skills, or achievements, incorporate them meaningfully.
+   - Emphasize the user's unique selling points or what makes them stand out.
    - Provide response in JSON format only.
+
+Example Bio Structures:
+   - Professional: "Software engineer with 5+ years of experience in full-stack development. Passionate about creating innovative solutions and enhancing user experiences."
+   - Personal: "Travel enthusiast exploring the world one city at a time. Sharing my adventures and tips along the way!"
+   - Brand: "Empowering small businesses with cutting-edge marketing strategies. Follow for tips, trends, and success stories."
 
 Do not include any description, do not include the \`\`\`.
   Code (no \`\`\`):
 `;
 
-export async function generateBio(input: string, temperature: number, model: string) {
-  "use server";
 
+export async function generateBio(input: string, temperature: number, model: string) {
   const {
     object: data,
     warnings,
