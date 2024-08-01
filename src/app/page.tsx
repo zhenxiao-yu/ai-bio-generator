@@ -3,7 +3,6 @@ import UserInput from "@/components/home/userInput";
 import { BioProvider } from "@/context/BioContext";
 import { ChevronRight, Star } from "lucide-react";
 
-import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import { Metadata } from "next";
 import Link from "next/link";
 
