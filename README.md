@@ -1,7 +1,7 @@
 # 🌟 AI Bio Generator
 
 Author: Zhenxiao (Mark) Yu
-DEMO: ai-bio-generator-steel.vercel.app
+🌐 [View the Live Demo](https://ai-bio-generator-steel.vercel.app)
 
 Welcome to the AI Bio Generator! This application helps you create the perfect social media bio with the power of AI. Built using Next.js, it offers a user-friendly interface and customizable options to generate bios that truly represent you.
 
