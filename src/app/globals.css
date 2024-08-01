@@ -4,72 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    --accent: 349 100% 47%;
-    --accent-foreground: 240 5.9% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 0%; /* Black */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 0%; /* Black */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 0 0% 0%; /* Black */
+    --primary: 0 0% 0%; /* Black */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 0 0% 90%; /* Light Gray */
+    --secondary-foreground: 0 0% 0%; /* Black */
+    --muted: 0 0% 90%; /* Light Gray */
+    --muted-foreground: 0 0% 50%; /* Dark Gray */
+    --accent: 0 0% 100%; /* White */
+    --accent-foreground: 0 0% 0%; /* Black */
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 0 0% 80%; /* Gray */
+    --input: 0 0% 80%; /* Gray */
+    --ring: 0 0% 0%; /* Black */
     --radius: 0.5rem;
   }
 
   /* Dark mode variables */
   .dark {
-    --background: 240 10% 10%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 14%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 14%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-
-    --secondary: 240 5.9% 10%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 5.9% 10%;
-    --muted-foreground: 240 4.8% 95.9%;
-
-    --accent: 349 100% 47%;
-    --accent-foreground: 240 10% 14%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 5.9% 25%;
-    --input: 240 5.9% 25%;
-    --ring: 0 0% 98%;
+    --background: 0 0% 10%; /* Dark Gray */
+    --foreground: 0 0% 100%; /* White */
+    --card: 0 0% 14%; /* Dark Gray */
+    --card-foreground: 0 0% 100%; /* White */
+    --popover: 0 0% 14%; /* Dark Gray */
+    --popover-foreground: 0 0% 100%; /* White */
+    --primary: 0 0% 100%; /* White */
+    --primary-foreground: 0 0% 10%; /* Black */
+    --secondary: 0 0% 10%; /* Very Dark Gray */
+    --secondary-foreground: 0 0% 100%; /* White */
+    --muted: 0 0% 10%; /* Very Dark Gray */
+    --muted-foreground: 0 0% 90%; /* Light Gray */
+    --accent: 0 0% 100%; /* White */
+    --accent-foreground: 0 0% 14%; /* Dark Gray */
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --border: 0 0% 25%; /* Very Dark Gray */
+    --input: 0 0% 25%; /* Very Dark Gray */
+    --ring: 0 0% 100%; /* White */
   }
 
+  /* Apply border color to all elements */
   * {
     @apply border-border;
   }
 
+  /* Apply background and text color to body */
   body {
     @apply bg-background text-foreground;
   }
