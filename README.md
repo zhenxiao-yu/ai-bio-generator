@@ -1,1 +1,1 @@
-# ai-bio-generator
+# Next.js AI powered Bio Generator Using Groq | Shadcn | Llama 3
