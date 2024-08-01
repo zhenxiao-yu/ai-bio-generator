@@ -259,7 +259,7 @@ const UserInput = () => {
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Add your old bio or write a few sentences about yourself"
+                        placeholder="Share your previous bio or describe yourself in a few sentences"
                         className="min-h-[10rem]"
                       />
                     </FormControl>
