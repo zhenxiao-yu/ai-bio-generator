@@ -105,7 +105,7 @@ const UserInput = () => {
   const fillExampleContent = () => {
     form.setValue(
       "content",
-      "A passionate software engineer with a love for crafting innovative digital solutions. Experienced in full-stack development and driven by a desire to create impactful user experiences. Always eager to learn and explore new technologies."
+      "Game developer & software engineer. Crafting engaging 2D/3D games and innovative digital solutions. Follow for tech insights and creativity! 🎮💻"
     );
   };
 
