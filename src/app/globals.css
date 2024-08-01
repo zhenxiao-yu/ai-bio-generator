@@ -35,16 +35,42 @@
     --radius: 0.5rem;
   }
 
-}
+  /* Dark mode variables */
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 98%;
 
-@layer base {
+    --card: 240 10% 14%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 14%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 5.9% 10%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5.9% 10%;
+    --muted-foreground: 240 4.8% 95.9%;
+
+    --accent: 349 100% 47%;
+    --accent-foreground: 240 10% 14%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 25%;
+    --input: 240 5.9% 25%;
+    --ring: 0 0% 98%;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
-
-
-

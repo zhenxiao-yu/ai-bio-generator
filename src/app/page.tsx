@@ -2,7 +2,7 @@ import Output from "@/components/home/Output";
 import UserInput from "@/components/home/UserInput";
 import { BioProvider } from "@/context/BioContext";
 import { ChevronRight, Star } from "lucide-react";
-
+import ThemeToggleButton from "@/components/home/ThemeToggleButton";
 import { Metadata } from "next";
 import Link from "next/link";
 
@@ -16,6 +16,7 @@ export default function Home() {
   return (
     <main className="relative grid grid-cols-1 slg:grid-cols-2 gap-12 px-4 py-12 sm:py-16 sm:px-8 md:px-10 slg:p-16 lg:p-24 dark:bg-gray-900">
       <div className="col-span-full group w-full flex flex-col items-center justify-center space-y-4 mb-8 text-center">
+        <ThemeToggleButton />
         <Link
           href="https://github.com/zhenxiao-yu/ai-bio-generator"
           target="_blank"
