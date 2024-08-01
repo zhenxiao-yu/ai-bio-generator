@@ -4,7 +4,7 @@ import { Badge } from "../shadcn-ui/badge";
 import { BorderBeam } from "../magicui/border-beam";
 import { BioContext } from "@/context/BioContext";
 import { Skeleton } from "../shadcn-ui/skeleton";
-import CopyLabel from "./CopyLabel";
+import CopyLabel from "./copyLabel";
 
 const Output = () => {
   const { output, loading } = useContext(BioContext);

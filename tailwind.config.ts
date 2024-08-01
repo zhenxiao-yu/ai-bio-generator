@@ -1,29 +1,29 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
-  darkMode:"class",
+  darkMode: "class", // Enable dark mode with a class
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
-  prefix: "",
+  ],
+  prefix: "", // Add a prefix to avoid conflicts (optional)
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "2rem", // Default padding for containers
       screens: {
-        "2xl": "1400px",
+        "2xl": "1400px", // Custom breakpoint for extra large screens
       },
     },
     extend: {
       fontFamily: {
-        sans: ['var(--font-geist-sans)'],
+        sans: ['var(--font-geist-sans)'], // Custom font
       },
-      screens:{
-        xs: "380px",
-        slg: "840px"
+      screens: {
+        xs: "380px", // Extra small screens
+        slg: "840px", // Small large screens
       },
       colors: {
         border: "hsl(var(--border))",
@@ -66,7 +66,7 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "gradient": {
+        gradient: {
           to: {
             backgroundPosition: "var(--bg-size) 0",
           },
@@ -92,7 +92,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+  plugins: [require("tailwindcss-animate")], // Ensure the plugin is installed
+} satisfies Config;
 
-export default config
+export default config;

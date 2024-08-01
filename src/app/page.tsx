@@ -1,5 +1,5 @@
 import Output from "@/components/home/outputArea";
-import UserInput from "@/components/home/UserInput";
+import UserInput from "@/components/home/userInput";
 import { BioProvider } from "@/context/BioContext";
 import { ChevronRight, Star } from "lucide-react";
 
