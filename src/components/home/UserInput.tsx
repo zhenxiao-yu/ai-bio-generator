@@ -30,27 +30,28 @@ import { Switch } from "../shadcn-ui/switch";
 import { generateBio } from "@/app/actions";
 import { BioContext } from "@/context/BioContext";
 
+// Schema validation using Zod
 const formSchema = z.object({
   model: z.string().min(1, "Model is required!"),
   temperature: z
     .number()
-    .min(0, "Temperature must be atleast 0")
-    .max(2, "Temperature must be at most 1"),
+    .min(0, "Temperature must be at least 0")
+    .max(2, "Temperature must be at most 2"),
   content: z
     .string()
-    .min(50, "Content should atlest have 50 characters.")
-    .max(500, "Content should not exceed 500 character limit."),
+    .min(50, "Content should have at least 50 characters.")
+    .max(500, "Content should not exceed 500 characters."),
   type: z.enum(["personal", "brand"], {
     errorMap: () => ({ message: "Type is required!" }),
   }),
   tone: z.enum(
     [
       "professional",
+      "passionate",
+      "thoughtful",
       "casual",
       "sarcastic",
       "funny",
-      "passionate",
-      "thoughtful",
     ],
     {
       errorMap: () => ({ message: "Tone is required!" }),
@@ -60,7 +61,7 @@ const formSchema = z.object({
 });
 
 const UserInput = () => {
-  // 1. Define your form.
+  // Define the form using react-hook-form and Zod resolver
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,10 +76,8 @@ const UserInput = () => {
 
   const { setOutput, setLoading, loading } = useContext(BioContext);
 
+  // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    // console.log(values);
     setLoading(true);
 
     const userInputValues = `
@@ -87,13 +86,13 @@ const UserInput = () => {
     Bio Type: ${values.type},
     Add Emojis: ${values.emojis}
     `;
+
     try {
       const { data } = await generateBio(
         userInputValues,
         values.temperature,
         values.model
       );
-      // console.log(data);
       setOutput(data);
       setLoading(false);
     } catch (e) {
@@ -109,8 +108,11 @@ const UserInput = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid w-full items-start gap-6"
         >
+          {/* Settings Fieldset */}
           <fieldset className="grid gap-6 rounded-[8px] border p-4 bg-background/10 backdrop-blur-sm">
             <legend className="-ml-1 px-1 text-sm font-medium">Settings</legend>
+
+            {/* Model Selection */}
             <div className="grid gap-3">
               <FormField
                 control={form.control}
@@ -123,11 +125,9 @@ const UserInput = () => {
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a model" />
-                          </SelectTrigger>
-                        </FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a model" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="llama3-8b-8192">
                             <div className="flex items-start gap-3 text-muted-foreground">
@@ -177,6 +177,7 @@ const UserInput = () => {
               />
             </div>
 
+            {/* Temperature Slider */}
             <div className="grid gap-3">
               <FormField
                 control={form.control}
@@ -223,11 +224,13 @@ const UserInput = () => {
             </div>
           </fieldset>
 
+          {/* User Input Fieldset */}
           <fieldset className="grid gap-6 rounded-[8px] border p-4 bg-background/10 backdrop-blur-sm">
             <legend className="-ml-1 px-1 text-sm font-medium">
               User Input
             </legend>
 
+            {/* Content Textarea */}
             <div className="grid gap-3">
               <FormField
                 control={form.control}
@@ -240,7 +243,7 @@ const UserInput = () => {
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Add your old bio or write few sentances about yourself"
+                        placeholder="Add your old bio or write a few sentences about yourself"
                         className="min-h-[10rem]"
                       />
                     </FormControl>
@@ -250,13 +253,14 @@ const UserInput = () => {
               />
             </div>
 
+            {/* Type and Tone Selection */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="">Type</FormLabel>
+                    <FormLabel>Type</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -281,7 +285,7 @@ const UserInput = () => {
                 name="tone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="">Tone</FormLabel>
+                    <FormLabel>Tone</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
@@ -308,6 +312,7 @@ const UserInput = () => {
               />
             </div>
 
+            {/* Emojis Switch */}
             <div className="grid gap-3">
               <FormField
                 control={form.control}
@@ -327,6 +332,7 @@ const UserInput = () => {
             </div>
           </fieldset>
 
+          {/* Submit Button */}
           <Button className="rounded" type="submit" disabled={loading}>
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Generate
