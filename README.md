@@ -1,4 +1,4 @@
-# 🌟 AI Bio Generator
+# 🌟 BioLoom - AI Bio Generator
 
 Author: Zhenxiao (Mark) Yu
 🌐 [View the Live Demo](https://ai-bio-generator-steel.vercel.app)
