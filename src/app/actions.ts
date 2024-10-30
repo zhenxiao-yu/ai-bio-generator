@@ -6,7 +6,7 @@ import { z } from "zod";
 import endent from "endent";
 
 const groq = createOpenAI({
-  apiKey: process.env.GROQ_API_KEY ?? "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",
+  apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
 });
 
