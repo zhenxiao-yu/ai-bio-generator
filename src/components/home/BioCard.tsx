@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Copy, Check, Edit2, Download, RefreshCw, X, Save } from "lucide-react";
+import { Copy, Check, Edit2, Download, RefreshCw, X, Save, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
 import { Textarea } from "@/components/shadcn-ui/textarea";
 import CharacterCounter from "./CharacterCounter";
 import BioScorePanel from "./BioScorePanel";
+import BioAnalysisPanel from "./BioAnalysisPanel";
+import PlatformPreview from "./PlatformPreview";
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/store/bioStore";
 import { useBioExport } from "@/hooks/useBioExport";
@@ -26,6 +28,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState(text);
   const [regenerating, setRegenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { editBio } = useBioStore();
@@ -59,17 +62,12 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
 
   const handleRegenerate = async () => {
     setRegenerating(true);
-    // Get the current form state from the last generate call (stored via the store)
-    // For a single bio regeneration, we re-run the full generation and swap just this slot
-    // This is a simplified approach: full generation + pick one result
     const state = useBioStore.getState();
     if (!state.bios.length) {
       setRegenerating(false);
       return;
     }
-
     try {
-      // Trigger a new single generation with a small fetch
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,9 +83,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
       });
       if (res.ok) {
         const json = (await res.json()) as { data: { bio: string }[] };
-        if (json.data?.[0]) {
-          editBio(index, json.data[0].bio);
-        }
+        if (json.data?.[0]) editBio(index, json.data[0].bio);
       }
     } catch {
       toast.error("Failed to regenerate. Please try again.");
@@ -121,7 +117,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
 
       {/* Footer: badges + actions */}
       <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {edited && (
             <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
               edited
@@ -131,7 +127,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
           <BioScorePanel text={text} index={index} platform={platform} score={score} />
         </div>
 
-        {/* Action buttons — always visible on mobile, hover on desktop */}
+        {/* Action buttons */}
         <div className={cn("flex items-center gap-1", "opacity-100 slg:opacity-0 slg:group-hover:opacity-100 transition-opacity")}>
           {editMode ? (
             <>
@@ -144,51 +140,42 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCa
             </>
           ) : (
             <>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={handleCopy}
-                aria-label={`Copy bio ${index + 1}`}
-              >
-                {copied ? (
-                  <Check className="w-3.5 h-3.5 text-green-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCopy} aria-label={`Copy bio ${index + 1}`}>
+                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
               </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={handleEditStart}
-                aria-label={`Edit bio ${index + 1}`}
-              >
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleEditStart} aria-label={`Edit bio ${index + 1}`}>
                 <Edit2 className="w-3.5 h-3.5" />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-7 w-7"
-                onClick={handleRegenerate}
-                disabled={regenerating}
-                aria-label={`Regenerate bio ${index + 1}`}
+                className={cn("h-7 w-7", showPreview && "bg-muted")}
+                onClick={() => setShowPreview((v) => !v)}
+                aria-label={showPreview ? "Hide preview" : "Show platform preview"}
+                aria-pressed={showPreview}
               >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleRegenerate} disabled={regenerating} aria-label={`Regenerate bio ${index + 1}`}>
                 <RefreshCw className={cn("w-3.5 h-3.5", regenerating && "animate-spin")} />
               </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={() => exportSingleBio(text, index)}
-                aria-label={`Download bio ${index + 1}`}
-              >
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => exportSingleBio(text, index)} aria-label={`Download bio ${index + 1}`}>
                 <Download className="w-3.5 h-3.5" />
               </Button>
             </>
           )}
         </div>
       </div>
+
+      {/* Inline analysis panels */}
+      <BioAnalysisPanel text={text} />
+
+      {/* Platform preview — toggled */}
+      {showPreview && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <PlatformPreview bio={text} platform={platform} characterLimit={characterLimit} />
+        </div>
+      )}
     </li>
   );
 };

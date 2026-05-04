@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Platform, HistoryEntry, BioScore } from "@/types";
-import { PLATFORMS } from "@/config/platforms";
+import { PLATFORMS, PLATFORM_ORDER } from "@/config/platforms";
 
 export interface Bio {
   text: string;
@@ -15,6 +15,8 @@ export type Theme = "light" | "dark";
 
 export type GenerateErrorCode = "RATE_LIMIT" | "AUTH" | "MODEL_UNAVAILABLE" | "UNKNOWN";
 
+export type BatchBios = Partial<Record<Platform, Bio[]>>;
+
 interface BioState {
   bios: Bio[];
   platform: Platform;
@@ -24,10 +26,14 @@ interface BioState {
   errorCode: GenerateErrorCode | null;
   abortController: AbortController | null;
   theme: Theme;
+  lastPayload: GeneratePayload | null;
+  batchBios: BatchBios;
+  batchLoading: boolean;
 }
 
 interface BioActions {
   generateBios: (payload: GeneratePayload) => Promise<void>;
+  generateAllPlatforms: () => Promise<void>;
   cancelGeneration: () => void;
   clearError: () => void;
   toggleTheme: () => void;
@@ -35,6 +41,7 @@ interface BioActions {
   editBio: (index: number, text: string) => void;
   setBios: (bios: Bio[]) => void;
   setBioScore: (index: number, score: BioScore) => void;
+  clearBatchBios: () => void;
   addToHistory: (entry: Omit<HistoryEntry, "id">) => void;
   clearHistory: () => void;
   restoreFromHistory: (id: string) => void;
@@ -53,6 +60,20 @@ export interface GeneratePayload {
 
 const MAX_HISTORY = 20;
 
+async function fetchBiosForPlatform(
+  payload: GeneratePayload,
+  platform: Platform
+): Promise<Bio[]> {
+  const res = await fetch("/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, platform }),
+  });
+  if (!res.ok) return [];
+  const json = (await res.json()) as { data: { bio: string }[] };
+  return (json.data ?? []).map((d) => ({ text: d.bio, edited: false }));
+}
+
 export const useBioStore = create<BioState & BioActions>()(
   persist(
     (set, get) => ({
@@ -64,12 +85,21 @@ export const useBioStore = create<BioState & BioActions>()(
       errorCode: null,
       abortController: null,
       theme: "light",
+      lastPayload: null,
+      batchBios: {},
+      batchLoading: false,
 
       generateBios: async (payload) => {
         get().cancelGeneration();
-
         const controller = new AbortController();
-        set({ loading: true, error: null, errorCode: null, abortController: controller });
+        set({
+          loading: true,
+          error: null,
+          errorCode: null,
+          abortController: controller,
+          lastPayload: payload,
+          batchBios: {},
+        });
 
         try {
           const res = await fetch("/api/generate", {
@@ -97,7 +127,6 @@ export const useBioStore = create<BioState & BioActions>()(
           const bios: Bio[] = json.data.map((d) => ({ text: d.bio, edited: false }));
           const platform = payload.platform ?? get().platform;
 
-          // Save to history (FIFO, max 20)
           const entry: HistoryEntry = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             timestamp: Date.now(),
@@ -121,6 +150,29 @@ export const useBioStore = create<BioState & BioActions>()(
           }
         }
       },
+
+      generateAllPlatforms: async () => {
+        const { lastPayload } = get();
+        if (!lastPayload) return;
+
+        set({ batchLoading: true, batchBios: {} });
+
+        const results = await Promise.allSettled(
+          PLATFORM_ORDER.map((p) => fetchBiosForPlatform(lastPayload, p))
+        );
+
+        const batchBios: BatchBios = {};
+        PLATFORM_ORDER.forEach((p, i) => {
+          const r = results[i];
+          if (r.status === "fulfilled" && r.value.length > 0) {
+            batchBios[p] = r.value;
+          }
+        });
+
+        set({ batchBios, batchLoading: false });
+      },
+
+      clearBatchBios: () => set({ batchBios: {} }),
 
       cancelGeneration: () => {
         const { abortController } = get();

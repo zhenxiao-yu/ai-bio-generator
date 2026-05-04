@@ -6,8 +6,9 @@ import { useBioStore, PLATFORMS } from "@/store/bioStore";
 import { BioCardSkeletons } from "./BioCardSkeleton";
 import ErrorCard from "./ErrorCard";
 import BioCard from "./BioCard";
+import BatchOutputTabs from "./BatchOutputTabs";
 import { useBioExport } from "@/hooks/useBioExport";
-import { FileText, Sparkles, Download } from "lucide-react";
+import { FileText, Sparkles, Download, Layers, Loader2 } from "lucide-react";
 import { Button } from "../shadcn-ui/button";
 import type { Platform } from "@/types";
 
@@ -27,7 +28,16 @@ const EmptyState = () => (
 );
 
 const Output = () => {
-  const { bios, loading, error, clearError, platform } = useBioStore();
+  const {
+    bios,
+    loading,
+    error,
+    clearError,
+    platform,
+    lastPayload,
+    batchLoading,
+    generateAllPlatforms,
+  } = useBioStore();
   const { exportAllBios } = useBioExport();
   const outputRef = useRef<HTMLDivElement>(null);
 
@@ -41,60 +51,81 @@ const Output = () => {
   }, [bios]);
 
   return (
-    <div
-      ref={outputRef}
-      className="relative flex min-h-[50vh] mt-2 flex-col rounded-xl bg-muted/50 backdrop-blur-sm overflow-hidden border border-primary/5 shadow-lg"
-    >
-      {loading && (
-        <BorderBeam size={1200} borderWidth={1.5} duration={4} className="z-10" aria-hidden="true" />
-      )}
-      <Badge variant="outline" className="absolute top-3 right-3 z-50">
-        Output
-      </Badge>
+    <div ref={outputRef} className="flex flex-col gap-4">
+      <div className="relative flex min-h-[50vh] flex-col rounded-xl bg-muted/50 backdrop-blur-sm overflow-hidden border border-primary/5 shadow-lg">
+        {loading && (
+          <BorderBeam size={1200} borderWidth={1.5} duration={4} className="z-10" aria-hidden="true" />
+        )}
+        <Badge variant="outline" className="absolute top-3 right-3 z-50">
+          Output
+        </Badge>
 
-      {loading ? (
-        <BioCardSkeletons />
-      ) : error ? (
-        <ErrorCard message={error} onRetry={clearError} />
-      ) : bios.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <div className="p-4 sm:p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              {bios.length} bio{bios.length !== 1 ? "s" : ""} generated
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5 text-xs h-7"
-              onClick={() => exportAllBios(bios.map((b) => b.text))}
-              aria-label="Export all bios as text file"
+        {loading ? (
+          <BioCardSkeletons />
+        ) : error ? (
+          <ErrorCard message={error} onRetry={clearError} />
+        ) : bios.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="p-4 sm:p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <p className="text-xs text-muted-foreground">
+                {bios.length} bio{bios.length !== 1 ? "s" : ""} · {PLATFORMS[platform as Platform]?.name}
+              </p>
+              <div className="flex items-center gap-2">
+                {lastPayload && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 text-xs h-7"
+                    onClick={generateAllPlatforms}
+                    disabled={batchLoading}
+                    aria-label="Generate bios for all 5 platforms"
+                  >
+                    {batchLoading ? (
+                      <Loader2 className="w-3 h-3 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Layers className="w-3 h-3" aria-hidden="true" />
+                    )}
+                    All Platforms
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs h-7"
+                  onClick={() => exportAllBios(bios.map((b) => b.text))}
+                  aria-label="Export all bios as text file"
+                >
+                  <Download className="w-3 h-3" aria-hidden="true" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            <ul
+              aria-live="polite"
+              aria-atomic="false"
+              aria-label="Generated bios"
+              className="flex flex-col gap-3"
             >
-              <Download className="w-3 h-3" aria-hidden="true" />
-              Export All
-            </Button>
+              {bios.map((bio, index) => (
+                <BioCard
+                  key={index}
+                  text={bio.text}
+                  index={index}
+                  edited={bio.edited}
+                  platform={platform as Platform}
+                  characterLimit={characterLimit}
+                  score={bio.score}
+                />
+              ))}
+            </ul>
           </div>
-          <ul
-            aria-live="polite"
-            aria-atomic="false"
-            aria-label="Generated bios"
-            className="flex flex-col gap-3"
-          >
-            {bios.map((bio, index) => (
-              <BioCard
-                key={index}
-                text={bio.text}
-                index={index}
-                edited={bio.edited}
-                platform={platform as Platform}
-                characterLimit={characterLimit}
-                score={bio.score}
-              />
-            ))}
-          </ul>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Batch all-platform results */}
+      <BatchOutputTabs />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { buildSystemPrompt, buildUserPrompt } from "@/lib/promptBuilder";
 import type { Platform } from "@/types";
@@ -82,18 +83,46 @@ export async function POST(request: NextRequest) {
   const systemPrompt = buildSystemPrompt(platform as Platform);
   const userPrompt = buildUserPrompt(content, tone, type, emojis);
 
-  try {
-    const { object } = await generateObject({
-      model: groq(model),
+  const attemptGenerate = async (useGroq: boolean) => {
+    if (useGroq) {
+      return generateObject({
+        model: groq(model),
+        system: systemPrompt,
+        prompt: userPrompt,
+        temperature,
+        maxTokens: 1024,
+        mode: "json",
+        schema: bioSchema,
+      });
+    }
+    // Gemini fallback — free tier: 1M tokens/day, 15 RPM
+    return generateObject({
+      model: google("gemini-1.5-flash"),
       system: systemPrompt,
       prompt: userPrompt,
       temperature,
       maxTokens: 1024,
-      mode: "json",
       schema: bioSchema,
     });
+  };
 
-    return NextResponse.json({ success: true, data: object.data });
+  try {
+    let result;
+    try {
+      result = await attemptGenerate(true);
+    } catch (groqErr) {
+      const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
+      const isRateLimit =
+        groqMsg.includes("429") || groqMsg.toLowerCase().includes("rate limit");
+      // Only fall back to Gemini if Groq is rate-limited and key is configured
+      if (isRateLimit && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        result = await attemptGenerate(false);
+      } else {
+        throw groqErr;
+      }
+    }
+
+    return NextResponse.json({ success: true, data: result.object.data });
   } catch (err) {
     const { error, code, status } = classifyError(err);
     return NextResponse.json({ success: false, error, code }, { status });
