@@ -1,34 +1,45 @@
-import React, { useState } from "react";
+"use client";
+import { useState } from "react";
+import { Copy, Check } from "lucide-react";
 import { Button } from "../shadcn-ui/button";
 
-// Component for a copy-to-clipboard button with a label
-const CopyLabel = ({ text }: { text: string }) => {
-  // State to manage the button label
-  const [label, setLabel] = useState("copy");
+interface CopyLabelProps {
+  text: string;
+  index?: number;
+}
 
-  // Function to copy text to the clipboard
-  const copyToClipboard = async (text: string) => {
+const CopyLabel = ({ text, index }: CopyLabelProps) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleClick = async () => {
     try {
-      await navigator.clipboard.writeText(text); // Copy the text to clipboard
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy the text: ", err); // Handle errors
+      console.error("Failed to copy:", err);
     }
   };
 
-  // Handle button click
-  const handleClick = () => {
-    copyToClipboard(text); // Copy the provided text
-    setLabel("copied!"); // Update the label to indicate success
-  };
-
   return (
-    // Render a button with styles and click handler
     <Button
       onClick={handleClick}
       variant="outline"
-      className="text-sm text-muted-foreground bg-background my-0 h-auto rounded-none border border-primary/20 border-t-0 rounded-b-lg hover:bg-primary hover:text-primary-foreground pt-0 pb-0.5"
+      size="sm"
+      aria-label={`Copy bio ${index !== undefined ? index + 1 : ""}`}
+      className="text-sm text-muted-foreground bg-background my-0 h-auto rounded-none border border-primary/20 border-t-0 rounded-b-lg hover:bg-primary hover:text-primary-foreground pt-0 pb-0.5 gap-1.5 transition-all"
     >
-      {label} {/* Display the current label */}
+      {copied ? (
+        <>
+          <Check className="w-3.5 h-3.5 text-green-500" />
+          <span>Copied!</span>
+        </>
+      ) : (
+        <>
+          <Copy className="w-3.5 h-3.5" />
+          <span>Copy</span>
+        </>
+      )}
     </Button>
   );
 };
