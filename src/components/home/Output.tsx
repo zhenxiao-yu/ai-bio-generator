@@ -89,6 +89,7 @@ const Output = () => {
                 edited={bio.edited}
                 platform={platform as Platform}
                 characterLimit={characterLimit}
+                score={bio.score}
               />
             ))}
           </ul>

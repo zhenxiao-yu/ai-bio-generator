@@ -2,12 +2,13 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Platform, HistoryEntry } from "@/types";
+import type { Platform, HistoryEntry, BioScore } from "@/types";
 import { PLATFORMS } from "@/config/platforms";
 
 export interface Bio {
   text: string;
   edited: boolean;
+  score?: BioScore;
 }
 
 export type Theme = "light" | "dark";
@@ -33,6 +34,7 @@ interface BioActions {
   setPlatform: (platform: Platform) => void;
   editBio: (index: number, text: string) => void;
   setBios: (bios: Bio[]) => void;
+  setBioScore: (index: number, score: BioScore) => void;
   addToHistory: (entry: Omit<HistoryEntry, "id">) => void;
   clearHistory: () => void;
   restoreFromHistory: (id: string) => void;
@@ -144,6 +146,11 @@ export const useBioStore = create<BioState & BioActions>()(
       },
 
       setBios: (bios) => set({ bios }),
+
+      setBioScore: (index, score) => {
+        const bios = get().bios.map((bio, i) => (i === index ? { ...bio, score } : bio));
+        set({ bios });
+      },
 
       addToHistory: (entry) => {
         const newEntry: HistoryEntry = {

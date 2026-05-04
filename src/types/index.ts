@@ -28,6 +28,17 @@ export interface FormValues {
   platform: Platform;
 }
 
+export interface BioScore {
+  overall: number;
+  scores: {
+    clarity: number;
+    platformFit: number;
+    keywords: number;
+    brevity: number;
+  };
+  tip: string;
+}
+
 export interface HistoryEntry {
   id: string;
   timestamp: number;

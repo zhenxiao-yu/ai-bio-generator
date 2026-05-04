@@ -5,10 +5,11 @@ import { Copy, Check, Edit2, Download, RefreshCw, X, Save } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
 import { Textarea } from "@/components/shadcn-ui/textarea";
 import CharacterCounter from "./CharacterCounter";
+import BioScorePanel from "./BioScorePanel";
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/store/bioStore";
 import { useBioExport } from "@/hooks/useBioExport";
-import type { Platform } from "@/types";
+import type { BioScore, Platform } from "@/types";
 import { toast } from "sonner";
 
 interface BioCardProps {
@@ -17,9 +18,10 @@ interface BioCardProps {
   edited: boolean;
   platform: Platform;
   characterLimit: number;
+  score?: BioScore;
 }
 
-const BioCard = ({ text, index, edited, platform, characterLimit }: BioCardProps) => {
+const BioCard = ({ text, index, edited, platform, characterLimit, score }: BioCardProps) => {
   const [copied, setCopied] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editText, setEditText] = useState(text);
@@ -126,6 +128,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit }: BioCardProps
             </span>
           )}
           <CharacterCounter count={text.length} limit={characterLimit} />
+          <BioScorePanel text={text} index={index} platform={platform} score={score} />
         </div>
 
         {/* Action buttons — always visible on mobile, hover on desktop */}
