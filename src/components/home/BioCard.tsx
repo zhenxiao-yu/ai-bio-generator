@@ -8,7 +8,6 @@ import CharacterCounter from "./CharacterCounter";
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/store/bioStore";
 import { useBioExport } from "@/hooks/useBioExport";
-import { PLATFORMS } from "@/config/platforms";
 import type { Platform } from "@/types";
 import { toast } from "sonner";
 
@@ -27,7 +26,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit }: BioCardProps
   const [regenerating, setRegenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { editBio, generateBios, bios } = useBioStore();
+  const { editBio } = useBioStore();
   const { exportSingleBio } = useBioExport();
 
   const handleCopy = async () => {
@@ -94,8 +93,6 @@ const BioCard = ({ text, index, edited, platform, characterLimit }: BioCardProps
       setRegenerating(false);
     }
   };
-
-  const platformConfig = PLATFORMS[platform];
 
   return (
     <li

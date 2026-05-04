@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useBioStore } from "@/store/bioStore";
 import { History, Trash2, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
-import { cn } from "@/lib/utils";
 import { PLATFORMS } from "@/config/platforms";
 import { formatDistanceToNow } from "date-fns";
 import type { Platform } from "@/types";
