@@ -31,11 +31,13 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 interface TemplatesModalProps {
   onSelect: (template: Template) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const TemplatesModal = ({ onSelect }: TemplatesModalProps) => {
+const TemplatesModal = ({ onSelect, open, onOpenChange }: TemplatesModalProps) => {
   return (
-    <Dialog.Root>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger asChild>
         <Button variant="outline" size="sm" type="button" className="gap-1.5">
           <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />

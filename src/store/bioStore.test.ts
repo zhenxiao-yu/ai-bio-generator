@@ -140,17 +140,19 @@ describe("generateBios", () => {
   });
 
   it("populates bios on successful response", async () => {
+    const ndjson =
+      JSON.stringify({ data: [{ bio: "Bio 1" }, { bio: "Bio 2" }, { bio: "Bio 3" }, { bio: "Bio 4" }] }) + "\n";
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(ndjson));
+        controller.close();
+      },
+    });
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({
-        data: [
-          { bio: "Bio 1" },
-          { bio: "Bio 2" },
-          { bio: "Bio 3" },
-          { bio: "Bio 4" },
-        ],
-      }),
-    } as Response);
+      body: stream,
+    } as unknown as Response);
 
     await useBioStore.getState().generateBios({
       model: "llama-3.1-8b-instant",

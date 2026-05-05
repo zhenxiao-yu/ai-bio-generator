@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from "react";
 import { Badge } from "../shadcn-ui/badge";
 import { BorderBeam } from "../magicui/border-beam";
 import { useBioStore, PLATFORMS } from "@/store/bioStore";
-import { BioCardSkeletons } from "./BioCardSkeleton";
+import BioCardSkeleton, { BioCardSkeletons } from "./BioCardSkeleton";
 import ErrorCard from "./ErrorCard";
 import BioCard from "./BioCard";
 import BatchOutputTabs from "./BatchOutputTabs";
@@ -60,20 +60,21 @@ const Output = () => {
           Output
         </Badge>
 
-        {loading ? (
+        {loading && bios.every((b) => !b.text) ? (
           <BioCardSkeletons />
         ) : error ? (
           <ErrorCard message={error} onRetry={clearError} />
-        ) : bios.length === 0 ? (
+        ) : bios.length === 0 || bios.every((b) => !b.text) ? (
           <EmptyState />
         ) : (
           <div className="p-4 sm:p-6 flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <p className="text-xs text-muted-foreground">
-                {bios.length} bio{bios.length !== 1 ? "s" : ""} · {PLATFORMS[platform as Platform]?.name}
+                {bios.filter((b) => b.text).length} bio{bios.filter((b) => b.text).length !== 1 ? "s" : ""} · {PLATFORMS[platform as Platform]?.name}
+                {loading && <span className="ml-1 animate-pulse">·</span>}
               </p>
               <div className="flex items-center gap-2">
-                {lastPayload && (
+                {!loading && lastPayload && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -90,16 +91,18 @@ const Output = () => {
                     All Platforms
                   </Button>
                 )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5 text-xs h-7"
-                  onClick={() => exportAllBios(bios.map((b) => b.text))}
-                  aria-label="Export all bios as text file"
-                >
-                  <Download className="w-3 h-3" aria-hidden="true" />
-                  Export
-                </Button>
+                {!loading && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 text-xs h-7"
+                    onClick={() => exportAllBios(bios.map((b) => b.text).filter(Boolean))}
+                    aria-label="Export all bios as text file"
+                  >
+                    <Download className="w-3 h-3" aria-hidden="true" />
+                    Export
+                  </Button>
+                )}
               </div>
             </div>
             <ul
@@ -108,17 +111,22 @@ const Output = () => {
               aria-label="Generated bios"
               className="flex flex-col gap-3"
             >
-              {bios.map((bio, index) => (
-                <BioCard
-                  key={index}
-                  text={bio.text}
-                  index={index}
-                  edited={bio.edited}
-                  platform={platform as Platform}
-                  characterLimit={characterLimit}
-                  score={bio.score}
-                />
-              ))}
+              {bios.map((bio, index) =>
+                bio.text ? (
+                  <BioCard
+                    key={index}
+                    text={bio.text}
+                    index={index}
+                    edited={bio.edited}
+                    platform={platform as Platform}
+                    characterLimit={characterLimit}
+                    score={bio.score}
+                    isStreaming={loading}
+                  />
+                ) : loading ? (
+                  <BioCardSkeleton key={index} />
+                ) : null
+              )}
             </ul>
           </div>
         )}

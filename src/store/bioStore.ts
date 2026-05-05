@@ -29,6 +29,8 @@ interface BioState {
   lastPayload: GeneratePayload | null;
   batchBios: BatchBios;
   batchLoading: boolean;
+  commandPaletteOpen: boolean;
+  templatesModalOpen: boolean;
 }
 
 interface BioActions {
@@ -46,6 +48,8 @@ interface BioActions {
   clearHistory: () => void;
   restoreFromHistory: (id: string) => void;
   deleteHistoryEntry: (id: string) => void;
+  setCommandPaletteOpen: (open: boolean) => void;
+  setTemplatesModalOpen: (open: boolean) => void;
 }
 
 export interface GeneratePayload {
@@ -88,10 +92,13 @@ export const useBioStore = create<BioState & BioActions>()(
       lastPayload: null,
       batchBios: {},
       batchLoading: false,
+      commandPaletteOpen: false,
+      templatesModalOpen: false,
 
       generateBios: async (payload) => {
         get().cancelGeneration();
         const controller = new AbortController();
+        const EMPTY_SLOTS: Bio[] = Array.from({ length: 4 }, () => ({ text: "", edited: false }));
         set({
           loading: true,
           error: null,
@@ -99,10 +106,11 @@ export const useBioStore = create<BioState & BioActions>()(
           abortController: controller,
           lastPayload: payload,
           batchBios: {},
+          bios: EMPTY_SLOTS,
         });
 
         try {
-          const res = await fetch("/api/generate", {
+          const res = await fetch("/api/generate?stream=true", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...payload, platform: payload.platform ?? get().platform }),
@@ -116,6 +124,7 @@ export const useBioStore = create<BioState & BioActions>()(
             };
             set({
               loading: false,
+              bios: [],
               error: json.error ?? "Generation failed.",
               errorCode: json.code ?? "UNKNOWN",
               abortController: null,
@@ -123,26 +132,76 @@ export const useBioStore = create<BioState & BioActions>()(
             return;
           }
 
-          const json = (await res.json()) as { data: { bio: string }[] };
-          const bios: Bio[] = json.data.map((d) => ({ text: d.bio, edited: false }));
-          const platform = payload.platform ?? get().platform;
+          const reader = res.body!.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let finalBios: Bio[] = [];
 
+          outer: while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+              if (!line.trim()) continue;
+              try {
+                const partial = JSON.parse(line) as {
+                  data?: { bio: string }[];
+                  __error?: { error: string; code: string };
+                };
+
+                if (partial.__error) {
+                  set({
+                    loading: false,
+                    bios: [],
+                    error: partial.__error.error,
+                    errorCode: (partial.__error.code as GenerateErrorCode) ?? "UNKNOWN",
+                    abortController: null,
+                  });
+                  break outer;
+                }
+
+                if (partial.data?.length) {
+                  const updated: Bio[] = partial.data.map((d, i) => ({
+                    text: d.bio ?? "",
+                    edited: false,
+                    score: get().bios[i]?.score,
+                  }));
+                  while (updated.length < 4) updated.push({ text: "", edited: false });
+                  finalBios = updated;
+                  set({ bios: updated });
+                }
+              } catch {
+                // ignore malformed lines
+              }
+            }
+          }
+
+          const completedBios = finalBios.filter((b) => b.text);
+          if (completedBios.length === 0) {
+            set({ loading: false, abortController: null });
+            return;
+          }
+
+          const platform = payload.platform ?? get().platform;
           const entry: HistoryEntry = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             timestamp: Date.now(),
             platform,
-            bios: bios.map((b) => b.text),
-            snippet: bios[0]?.text.slice(0, 60) ?? "",
+            bios: completedBios.map((b) => b.text),
+            snippet: completedBios[0]?.text.slice(0, 60) ?? "",
           };
           const history = [entry, ...get().history].slice(0, MAX_HISTORY);
-
-          set({ bios, loading: false, abortController: null, history });
+          set({ loading: false, abortController: null, history });
         } catch (err) {
           if (err instanceof Error && err.name === "AbortError") {
-            set({ loading: false, error: null, errorCode: null, abortController: null });
+            set({ loading: false, bios: [], error: null, errorCode: null, abortController: null });
           } else {
             set({
               loading: false,
+              bios: [],
               error: "Something went wrong. Please try again.",
               errorCode: "UNKNOWN",
               abortController: null,
@@ -226,6 +285,9 @@ export const useBioStore = create<BioState & BioActions>()(
         const history = get().history.filter((h) => h.id !== id);
         set({ history });
       },
+
+      setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+      setTemplatesModalOpen: (open) => set({ templatesModalOpen: open }),
     }),
     {
       name: "bio-store",

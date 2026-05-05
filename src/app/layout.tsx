@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/shadcn-ui/tooltip";
 import GridPattern from "@/components/magicui/grid-pattern";
 import { Toaster } from "sonner";
+import { CommandPalette } from "@/components/home/CommandPalette";
 
 export const metadata: Metadata = {
   icons: {
@@ -39,6 +40,7 @@ export default function RootLayout({
         <GridPattern width={20} height={20} className="-z-10 opacity-60" />
         <TooltipProvider>
           {children}
+          <CommandPalette />
           <Toaster position="top-right" richColors closeButton />
         </TooltipProvider>
       </body>

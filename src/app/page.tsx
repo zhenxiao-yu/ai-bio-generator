@@ -1,9 +1,13 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import Output from "@/components/home/Output";
 import UserInput from "@/components/home/UserInput";
 import BioHistory from "@/components/home/BioHistory";
 import Header from "@/components/layout/Header";
+import { HeroSection } from "@/components/home/HeroSection";
+import { StatsSection } from "@/components/home/StatsSection";
+import { SharedBioModal } from "@/components/home/SharedBioModal";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -52,15 +56,8 @@ export default function Home() {
       <Header />
 
       <main className="relative grid grid-cols-1 slg:grid-cols-2 gap-8 slg:gap-12 px-4 py-8 sm:py-12 sm:px-8 md:px-10 slg:p-12 lg:p-16 max-w-[1600px] mx-auto">
-        {/* Compact hero */}
-        <div className="col-span-full flex flex-col items-center text-center gap-3 mb-4">
-          <h1 className="font-extrabold text-3xl md:text-4xl slg:text-5xl tracking-tight uppercase">
-            Your perfect bio, ready in seconds
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
-            Fill in a few details and let AI craft compelling bios for LinkedIn, Twitter/X, Instagram, GitHub, and more.
-          </p>
-        </div>
+        <HeroSection />
+        <StatsSection />
 
         <UserInput />
         <div id="output" className="flex flex-col gap-4">
@@ -70,6 +67,10 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      <Suspense fallback={null}>
+        <SharedBioModal />
+      </Suspense>
     </>
   );
 }

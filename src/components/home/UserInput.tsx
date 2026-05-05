@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/shadcn-ui/select";
 import MetaIcon from "../icons/Meta";
-import MistralIcon from "../icons/Mistral";
+import { Cpu } from "lucide-react";
 import { Slider } from "../shadcn-ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn-ui/tooltip";
 import { Info, Loader2, Square } from "lucide-react";
@@ -31,6 +31,7 @@ import { Switch } from "../shadcn-ui/switch";
 import { useBioStore } from "@/store/bioStore";
 import PlatformSelector from "./PlatformSelector";
 import TemplatesModal from "./TemplatesModal";
+import { useTypewriter } from "@/hooks/useTypewriter";
 import type { Platform, Template } from "@/types";
 
 const formSchema = z.object({
@@ -55,9 +56,22 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
 const UserInput = () => {
-  const { loading, error, platform, setPlatform, generateBios, cancelGeneration, clearError } =
-    useBioStore();
+  const {
+    loading,
+    error,
+    platform,
+    setPlatform,
+    generateBios,
+    cancelGeneration,
+    clearError,
+    templatesModalOpen,
+    setTemplatesModalOpen,
+  } = useBioStore();
+
+  const { type: typeText, stop: stopTyping, isTyping } = useTypewriter({ speed: 28 });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,35 +86,65 @@ const UserInput = () => {
   });
 
   // Show toast on error
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       toast.error(error);
       clearError();
     }
   }, [error, clearError]);
 
-  async function onSubmit(values: FormValues) {
-    await generateBios({
-      model: values.model,
-      temperature: values.temperature,
-      content: values.content,
-      type: values.type,
-      tone: values.tone,
-      emojis: values.emojis,
-      platform,
-    });
-  }
+  const onSubmit = useCallback(
+    async (values: FormValues) => {
+      await generateBios({
+        model: values.model,
+        temperature: values.temperature,
+        content: values.content,
+        type: values.type,
+        tone: values.tone,
+        emojis: values.emojis,
+        platform,
+      });
+    },
+    [generateBios, platform]
+  );
+
+  // Cmd+Enter to generate
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!loading) form.handleSubmit(onSubmit)();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [loading, form, onSubmit]);
+
+  // CustomEvent from command palette
+  useEffect(() => {
+    const handleGenerate = () => {
+      if (!loading) form.handleSubmit(onSubmit)();
+    };
+    window.addEventListener("bioloom:generate", handleGenerate);
+    return () => window.removeEventListener("bioloom:generate", handleGenerate);
+  }, [loading, form, onSubmit]);
+
+  // Cleanup typewriter on unmount
+  useEffect(() => () => stopTyping(), [stopTyping]);
 
   const handleTemplateSelect = (template: Template) => {
     const v = template.formValues;
-    if (v.content) form.setValue("content", v.content);
     if (v.type) form.setValue("type", v.type);
     if (v.tone) form.setValue("tone", v.tone);
     if (v.emojis !== undefined) form.setValue("emojis", v.emojis);
     if (v.platform) setPlatform(v.platform as Platform);
+    if (v.content) {
+      typeText(v.content, (val: string) => form.setValue("content", val, { shouldValidate: false }));
+    }
   };
 
   const fillExampleContent = () => {
+    stopTyping();
     form.setValue(
       "content",
       "Game developer & software engineer. Crafting engaging 2D/3D games and innovative digital solutions. Follow for tech insights and creativity!"
@@ -133,7 +177,11 @@ const UserInput = () => {
                     <FormLabel className="flex items-center justify-between pb-2">
                       About Yourself
                       <div className="flex gap-2">
-                        <TemplatesModal onSelect={handleTemplateSelect} />
+                        <TemplatesModal
+                          onSelect={handleTemplateSelect}
+                          open={templatesModalOpen}
+                          onOpenChange={setTemplatesModalOpen}
+                        />
                         <Button
                           variant="outline"
                           size="sm"
@@ -149,8 +197,17 @@ const UserInput = () => {
                         {...field}
                         placeholder="Share your previous bio or describe yourself in a few sentences"
                         className="min-h-[10rem]"
+                        readOnly={isTyping}
+                        onClick={() => { if (isTyping) stopTyping(); }}
+                        onFocus={() => { if (isTyping) stopTyping(); }}
                       />
                     </FormControl>
+                    {isTyping && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="inline-block w-1 h-3 bg-foreground animate-pulse rounded-sm" />
+                        Click to stop typing
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -254,13 +311,13 @@ const UserInput = () => {
                               </div>
                             </div>
                           </SelectItem>
-                          <SelectItem value="mixtral-8x7b-32768">
+                          <SelectItem value="gemma2-9b-it">
                             <div className="flex items-start gap-3 text-muted-foreground">
-                              <MistralIcon className="size-5" />
+                              <Cpu className="size-5" />
                               <div>
                                 <p>
-                                  <span className="text-foreground font-medium mr-2">Mixtral</span>
-                                  8x7b
+                                  <span className="text-foreground font-medium mr-2">Gemma 2</span>
+                                  9B
                                 </p>
                               </div>
                             </div>
@@ -347,6 +404,15 @@ const UserInput = () => {
               </Button>
             )}
           </div>
+          {!loading && (
+            <p className="text-xs text-muted-foreground text-center -mt-3">
+              Press{" "}
+              <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-xs">
+                {isMac ? "⌘↵" : "Ctrl+↵"}
+              </kbd>{" "}
+              to generate
+            </p>
+          )}
         </form>
       </Form>
     </div>

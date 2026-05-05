@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateObject } from "ai";
+import { generateObject, streamObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
@@ -62,7 +62,15 @@ function classifyError(err: unknown): { error: string; code: string; status: num
   };
 }
 
+function isRateLimit(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.includes("429") || msg.toLowerCase().includes("rate limit");
+}
+
 export async function POST(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const streaming = searchParams.get("stream") === "true";
+
   let body: unknown;
   try {
     body = await request.json();
@@ -79,10 +87,67 @@ export async function POST(request: NextRequest) {
   }
 
   const { model, temperature, content, type, tone, emojis, platform } = parsed.data;
-
   const systemPrompt = buildSystemPrompt(platform as Platform);
   const userPrompt = buildUserPrompt(content, tone, type, emojis);
 
+  // ── Streaming path ───────────────────────────────────────────────────────
+  if (streaming) {
+    const encoder = new TextEncoder();
+
+    const readable = new ReadableStream({
+      async start(controller) {
+        const send = (obj: unknown) =>
+          controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
+
+        const runStream = async (useGroq: boolean) => {
+          const result = useGroq
+            ? streamObject({
+                model: groq(model),
+                system: systemPrompt,
+                prompt: userPrompt,
+                temperature,
+                maxTokens: 1024,
+                mode: "json",
+                schema: bioSchema,
+              })
+            : streamObject({
+                model: google("gemini-1.5-flash"),
+                system: systemPrompt,
+                prompt: userPrompt,
+                temperature,
+                maxTokens: 1024,
+                schema: bioSchema,
+              });
+
+          for await (const partial of result.partialObjectStream) {
+            send(partial);
+          }
+        };
+
+        try {
+          await runStream(true);
+        } catch (groqErr) {
+          if (isRateLimit(groqErr) && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+            try {
+              await runStream(false);
+            } catch (fallbackErr) {
+              send({ __error: classifyError(fallbackErr) });
+            }
+          } else {
+            send({ __error: classifyError(groqErr) });
+          }
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(readable, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  // ── Non-streaming path (batch / regenerate) ──────────────────────────────
   const attemptGenerate = async (useGroq: boolean) => {
     if (useGroq) {
       return generateObject({
@@ -95,7 +160,6 @@ export async function POST(request: NextRequest) {
         schema: bioSchema,
       });
     }
-    // Gemini fallback — free tier: 1M tokens/day, 15 RPM
     return generateObject({
       model: google("gemini-1.5-flash"),
       system: systemPrompt,
@@ -112,10 +176,8 @@ export async function POST(request: NextRequest) {
       result = await attemptGenerate(true);
     } catch (groqErr) {
       const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
-      const isRateLimit =
-        groqMsg.includes("429") || groqMsg.toLowerCase().includes("rate limit");
-      // Only fall back to Gemini if Groq is rate-limited and key is configured
-      if (isRateLimit && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      const rateLimit = groqMsg.includes("429") || groqMsg.toLowerCase().includes("rate limit");
+      if (rateLimit && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
         result = await attemptGenerate(false);
       } else {
         throw groqErr;
