@@ -15,7 +15,28 @@
       "Bash(Select-Object -Property FullName, PSIsContainer)",
       "Bash(ConvertTo-Json)",
       "Bash(ConvertFrom-Json)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'fix: remove unused Lightbulb import in BioScorePanel *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"require\\('nanoid'\\); console.log\\('nanoid ok'\\)\")",
+      "Bash(cd /d \"h:\\\\Github\\\\ai-bio-generator\")",
+      "Bash(dir vercel.json)",
+      "Bash(dir next.config.ts)",
+      "Bash(git commit -m 'chore: update all URLs to bioloom.is-a.dev *)",
+      "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
+      "Bash(node -e \"const p = require.resolve\\('next/dist/bin/next'\\); console.log\\(p\\)\")",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" status --short)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" diff --stat HEAD)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" add src/app/about/ src/app/page.tsx src/components/layout/Header.tsx src/components/layout/Footer.tsx)",
+      "Bash(git -C H:/Github/ai-bio-generator commit -m ' *)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" push origin main)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" add src/middleware.ts src/app/api/generate/route.ts src/app/api/score/route.ts src/app/not-found.tsx vercel.json)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" log --oneline -3)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" add src/app/about/page.tsx src/app/not-found.tsx)",
+      "Bash(git -C H:/Github/ai-bio-generator commit -m 'fix: correct shadcn-ui import paths in about and not-found pages *)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" add src/app/about/page.tsx)",
+      "Bash(git -C H:/Github/ai-bio-generator commit -m 'fix: remove unused Key import in about page \\(ESLint error\\) *)",
+      "Bash(git -C \"H:/Github/ai-bio-generator\" add src/app/page.tsx src/components/home/HeroSection.tsx src/components/home/StatsSection.tsx src/components/home/Output.tsx src/components/home/BioCard.tsx)"
     ]
   }
 }

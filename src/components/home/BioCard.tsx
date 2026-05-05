@@ -130,10 +130,11 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score, isStrea
     <li
       style={style}
       className={cn(
-        "group w-full border border-border rounded-xl p-4 relative",
-        "bg-gradient-to-br from-background to-muted/30",
-        "border-l-4 border-l-foreground/20 hover:border-l-foreground/60",
-        "hover:shadow-lg hover:shadow-foreground/8 hover:-translate-y-0.5",
+        "group w-full rounded-xl p-4 relative",
+        "bg-card border border-border/60",
+        "border-l-[3px] border-l-primary/35 hover:border-l-primary/75",
+        "shadow-sm hover:shadow-md hover:shadow-primary/8",
+        "hover:-translate-y-0.5",
         "transition-all duration-200 animate-fade-up [animation-fill-mode:both]"
       )}
     >

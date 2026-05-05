@@ -15,17 +15,23 @@ import type { Platform } from "@/types";
 const CARD_STYLES: React.CSSProperties[] = [0, 1, 2, 3].map((i) => ({ animationDelay: `${i * 90}ms` }));
 
 const EmptyState = () => (
-  <div className="flex flex-col items-center justify-center gap-4 p-12 text-center opacity-60">
-    <div className="relative">
-      <FileText className="w-12 h-12 text-muted-foreground" aria-hidden="true" />
-      <Sparkles
-        className="w-5 h-5 text-muted-foreground absolute -top-1 -right-2"
-        aria-hidden="true"
-      />
+  <div className="flex flex-col items-center justify-center gap-5 p-10 sm:p-14 text-center">
+    <div className="relative animate-float-y">
+      <div className="w-16 h-16 rounded-2xl bg-muted/80 border border-border/70 flex items-center justify-center shadow-sm">
+        <FileText className="w-7 h-7 text-muted-foreground/50" aria-hidden="true" />
+      </div>
+      <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+        <Sparkles className="w-3 h-3 text-primary/60" aria-hidden="true" />
+      </div>
     </div>
-    <p className="text-sm text-muted-foreground max-w-xs">
-      Fill in your details and click <strong>Generate</strong> to create your personalized bios.
-    </p>
+    <div className="space-y-1.5">
+      <p className="text-sm font-semibold text-foreground/75">Ready to generate</p>
+      <p className="text-xs text-muted-foreground max-w-[220px] leading-relaxed">
+        Fill in your details and click{" "}
+        <strong className="font-semibold text-foreground/60">Generate</strong>{" "}
+        to create 4 personalised bios.
+      </p>
+    </div>
   </div>
 );
 
@@ -54,7 +60,7 @@ const Output = () => {
 
   return (
     <div ref={outputRef} className="flex flex-col gap-4">
-      <div className="relative flex min-h-[50vh] flex-col rounded-xl bg-muted/50 backdrop-blur-sm overflow-hidden border border-primary/5 shadow-lg">
+      <div className="relative flex min-h-[50vh] flex-col rounded-xl bg-card/90 backdrop-blur-sm overflow-hidden border border-border/60 shadow-sm">
         {loading && (
           <BorderBeam size={1200} borderWidth={1.5} duration={4} className="z-10" aria-hidden="true" />
         )}
