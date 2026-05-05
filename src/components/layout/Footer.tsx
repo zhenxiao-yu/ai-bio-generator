@@ -12,6 +12,8 @@ const TECH_LINKS = [
 const NAV_LINKS = [
   { label: "Generator", href: "/" },
   { label: "About", href: "/about" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   {
     label: "GitHub",
     href: "https://github.com/zhenxiao-yu/ai-bio-generator",

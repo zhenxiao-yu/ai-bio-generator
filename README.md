@@ -47,8 +47,8 @@ Before you begin, ensure you have met the following requirements:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/AI-Bio-Generator.git
-   cd AI-Bio-Generator
+   git clone https://github.com/zhenxiao-yu/ai-bio-generator.git
+   cd ai-bio-generator
    ```
 
 2. **Install dependencies**:
