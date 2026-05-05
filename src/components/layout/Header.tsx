@@ -15,7 +15,13 @@ const Header = () => {
           BioLoom
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/about"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+          >
+            About
+          </Link>
           <Link
             href="https://github.com/zhenxiao-yu/ai-bio-generator"
             target="_blank"

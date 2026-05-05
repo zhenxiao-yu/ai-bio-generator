@@ -5,25 +5,10 @@ import Output from "@/components/home/Output";
 import UserInput from "@/components/home/UserInput";
 import BioHistory from "@/components/home/BioHistory";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { StatsSection } from "@/components/home/StatsSection";
 import { SharedBioModal } from "@/components/home/SharedBioModal";
-
-const Footer = () => (
-  <footer className="py-6 border-t border-border text-center bg-background">
-    <p className="text-xs sm:text-sm text-muted-foreground px-4">
-      © 2026 Zhenxiao Yu. All rights reserved.{" "}
-      <a
-        href="https://m4rkyu.com"
-        className="underline underline-offset-2 hover:text-foreground transition-colors"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        m4rkyu.com
-      </a>
-    </p>
-  </footer>
-);
 
 export default function Home() {
   return (
