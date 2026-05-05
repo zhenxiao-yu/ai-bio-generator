@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/shadcn-ui/button";
 import { Home, Zap } from "lucide-react";
+import { SITE_NAME } from "@/lib/siteConfig";
+
+export const metadata = {
+  title: `Page Not Found · ${SITE_NAME}`,
+  description: "This page doesn't exist. Head back to BioLoom and generate something great.",
+};
 
 export default function NotFound() {
   return (

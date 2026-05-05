@@ -142,7 +142,7 @@ Be a demanding critic. Most bios deserve 55–70/100. A truly great bio earns 85
       const isLast = modelId === scorers[scorers.length - 1];
       if (isLast || !isRetryable(err)) {
         const { error, code, status } = classifyError(err);
-        console.error("[score] scorer failed:", modelId, err);
+        console.error("[score] all scorers failed:", err);
         return NextResponse.json({ error, code }, { status });
       }
       // Try next scorer

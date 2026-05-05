@@ -1,111 +1,141 @@
-# 🌟 BioLoom - AI Bio Generator
+# BioLoom — AI Bio Generator
 
-Author: Zhenxiao (Mark) Yu
-🌐 [View the Live Demo](https://ai-bio-generator-steel.vercel.app)
+**Author:** Zhenxiao (Mark) Yu  
+**Live demo:** [bioloom.is-a.dev](https://bioloom.is-a.dev)
 
-Welcome to the AI Bio Generator! This application helps you create the perfect social media bio with the power of AI. Built using Next.js, it offers a user-friendly interface and customizable options to generate bios that truly represent you.
+Generate 4 unique, platform-optimized professional bios in seconds. 8 AI models, 5 platforms, 6 tones. Free forever — no signup required.
 
-## 📋 Table of Contents
+---
 
-- [✨ Features](#-features)
-- [🚀 Getting Started](#-getting-started)
-  - [📋 Prerequisites](#-prerequisites)
-  - [🔧 Installation](#-installation)
-  - [🏃‍♂️ Running the App](#-running-the-app)
-- [🛠️ Usage](#-usage)
-- [🤝 Contributing](#-contributing)
-- [📜 License](#-license)
-- [💡 Acknowledgments](#-acknowledgments)
+## Features
 
-## ✨ Features
+- **Streaming output** — bios appear word-by-word for instant feedback
+- **8 AI models** — Llama 3.3 70B, Llama 4 Scout, Llama 4 Maverick, Gemma 2 9B, Mistral Saba, DeepSeek R1, Qwen 2.5 32B, Gemini 2.0 Flash (with automatic fallback chain)
+- **5 platform presets** — Twitter/X, LinkedIn, Instagram, GitHub, General
+- **6 tone options** — Professional, Casual, Creative, Bold, Friendly, Minimalist
+- **Bio quality scoring** — AI-powered readability and engagement scores
+- **Edit & regenerate** — edit any bio inline, regenerate individual cards
+- **All-platform batch** — generate bios for all 5 platforms at once
+- **Share a bio** — copy a shareable URL for any generated bio
+- **Export** — download all bios as a `.txt` file
+- **Command palette** — `Cmd+K` for keyboard-first power users
+- **Keyboard shortcut** — `Cmd+Enter` / `Ctrl+Enter` to generate
+- **Bio history** — last 20 sessions saved locally in your browser
+- **Dark mode** — full light/dark theme with system preference detection
+- **Platform preview** — see how your bio renders in each platform's UI
+- **Rate limited** — 12 generate / 30 score requests per minute per IP
+- **Zero signup** — no account, no email, no tracking
 
-- 📱 **Responsive Layout**: Optimized for both desktop and mobile devices.
-- 🛠️ **Interactive Elements**: Includes buttons, sliders, dropdowns, and text areas for easy input.
-- ✅ **Form Validation**: Uses `react-hook-form` and `zod` for efficient form handling and validation.
-- 🎨 **Customizable Bio Generation**:
-  - 🧠 Model selection (e.g., Llama 3, Mixtral)
-  - 🎚️ Creativity slider to adjust the level of originality
-  - ✍️ Content input area for your existing bio or new text
-  - 📋 Type and tone selection (e.g., personal, brand, professional, casual, etc.)
-  - 😊 Emoji inclusion toggle
-- ⚙️ **Asynchronous Bio Generation**: Loading spinner and context management to handle state.
-- 💬 **Tooltips**: Provides additional information for better user understanding.
-- 🌐 **SEO and Metadata**: Enhanced discoverability online.
-- 🌟 **GitHub Integration**: Link to the source code repository.
+---
 
-## 🚀 Getting Started
+## Tech Stack
 
-### 📋 Prerequisites
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router, Server Components, Turbopack) |
+| AI SDK | Vercel AI SDK v4 (`streamObject`) |
+| Primary AI | Groq (Llama 3.3, Llama 4, Gemma 2, Mistral, DeepSeek, Qwen) |
+| Fallback AI | Google Gemini 2.0 Flash |
+| Styling | Tailwind CSS v3, shadcn/ui, Magic UI |
+| State | Zustand with localStorage persistence |
+| Forms | React Hook Form + Zod |
+| Animations | Framer Motion, canvas-confetti |
+| Analytics | Vercel Analytics + Speed Insights |
+| Deployment | Vercel Edge Network |
 
-Before you begin, ensure you have met the following requirements:
+---
 
-- 🖥️ **Node.js**: Install the latest version of Node.js
-- 📦 **npm or Yarn**: Install npm or Yarn package manager
+## Getting Started
 
-### 🔧 Installation
+### Prerequisites
 
-1. **Clone the repository**:
+- Node.js 18+
+- A [Groq API key](https://console.groq.com) (free tier available)
+- Optionally a [Google AI Studio key](https://aistudio.google.com) for Gemini fallback
 
-   ```bash
-   git clone https://github.com/zhenxiao-yu/ai-bio-generator.git
-   cd ai-bio-generator
-   ```
+### Clone and run
 
-2. **Install dependencies**:
+```bash
+git clone https://github.com/zhenxiao-yu/ai-bio-generator.git
+cd ai-bio-generator
+npm install
+```
 
-   ```bash
-   npm install
-   ```
+Copy the example env file and add your API keys:
 
-   or
+```bash
+cp .env.local.example .env.local
+```
 
-   ```bash
-   yarn install
-   ```
+```env
+# .env.local
+GROQ_API_KEY=your_groq_api_key_here
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key_here   # optional
+```
 
-### 🏃‍♂️ Running the App
+Start the dev server:
 
-1. **Start the development server**:
+```bash
+npm run dev
+```
 
-   ```bash
-   npm run dev
-   ```
+Open [http://localhost:3000](http://localhost:3000).
 
-   or
+### Deploy your own
 
-   ```bash
-   yarn dev
-   ```
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/zhenxiao-yu/ai-bio-generator)
 
-2. **Open your browser** and navigate to `http://localhost:3000` to see the app in action.
+Set `GROQ_API_KEY` in your Vercel project environment variables. The app is fully functional with only Groq (Gemini is the fallback).
 
-## 🛠️ Usage
+---
 
-1. **Select a Model**: Choose an AI model for generating your bio.
-2. **Adjust Creativity**: Use the slider to set the desired level of creativity.
-3. **Input Your Content**: Enter your existing bio or write a few sentences about yourself.
-4. **Select Type and Tone**: Choose the type (personal or brand) and tone (e.g., professional, casual).
-5. **Toggle Emojis**: Decide whether to include emojis in your bio.
-6. **Generate Bio**: Click the "Generate" button and wait for your new bio to be created.
+## Project Structure
 
-## 🤝 Contributing
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── generate/     # Streaming bio generation endpoint
+│   │   ├── score/        # Bio quality scoring endpoint
+│   │   └── health/       # Provider health check
+│   ├── about/            # About page
+│   ├── privacy/          # Privacy policy
+│   └── terms/            # Terms of service
+├── components/
+│   ├── home/             # All main UI components
+│   ├── layout/           # Header, Footer
+│   ├── magicui/          # Magic UI components
+│   └── shadcn-ui/        # shadcn/ui components
+├── hooks/                # Custom React hooks
+├── lib/                  # modelRegistry, utils, siteConfig
+├── store/                # Zustand store
+└── types/                # Shared TypeScript types
+```
 
-We welcome contributions! Follow these steps to contribute:
+---
 
-1. **Fork the repository**.
-2. **Create a new branch** (`git checkout -b feature/your-feature-name`).
-3. **Commit your changes** (`git commit -m 'Add some feature'`).
-4. **Push to the branch** (`git push origin feature/your-feature-name`).
-5. **Open a pull request**.
+## Contributing
 
-## 📜 License
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -m 'Add my feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
+5. Open a pull request
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+---
 
-## 💡 Acknowledgments
+## License
 
-- **Next.js**: The React framework used to build this app.
-- **React Hook Form**: For efficient form handling.
-- **Zod**: For schema validation.
-- **Lucide-react**: For beautiful icons.
-- **Tailwind CSS**: For utility-first CSS styling.
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org) — React framework
+- [Vercel AI SDK](https://sdk.vercel.ai) — streaming AI primitives
+- [Groq](https://console.groq.com) — ultra-fast LLM inference
+- [shadcn/ui](https://ui.shadcn.com) — component system
+- [Magic UI](https://magicui.design) — animated components
+- [Lucide](https://lucide.dev) — icon library
+- [Tailwind CSS](https://tailwindcss.com) — utility-first styling

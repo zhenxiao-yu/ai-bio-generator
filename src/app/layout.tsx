@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,15 @@ import {
   SITE_KEYWORDS,
   SITE_AUTHOR,
 } from "@/lib/siteConfig";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s | ${SITE_NAME}` },
@@ -88,9 +97,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.groq.com" />
         <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
         <link rel="preconnect" href="https://api.groq.com" crossOrigin="anonymous" />
-        {/* Mobile browser chrome color */}
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

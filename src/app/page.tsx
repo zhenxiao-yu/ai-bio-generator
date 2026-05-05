@@ -1,5 +1,13 @@
 export const dynamic = "force-dynamic";
 
+import type { Metadata } from "next";
+import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from "@/lib/siteConfig";
+
+export const metadata: Metadata = {
+  title: { absolute: `${SITE_NAME} — ${SITE_TAGLINE}` },
+  description: SITE_DESCRIPTION,
+};
+
 import { Suspense } from "react";
 import Output from "@/components/home/Output";
 import UserInput from "@/components/home/UserInput";
