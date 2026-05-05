@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { track } from "@vercel/analytics";
 
 import { Button } from "@/components/shadcn-ui/button";
 import {
@@ -158,6 +159,14 @@ const UserInput = () => {
 
   const onSubmit = useCallback(
     async (values: FormValues) => {
+      track("bio_generated", {
+        model: values.model,
+        platform,
+        tone: values.tone,
+        type: values.type,
+        length: values.length ?? "balanced",
+        focusAreaCount: (values.focusAreas ?? []).length,
+      });
       await generateBios({
         model: values.model,
         temperature: values.temperature,

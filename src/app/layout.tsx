@@ -6,8 +6,28 @@ import { TooltipProvider } from "@/components/shadcn-ui/tooltip";
 import GridPattern from "@/components/magicui/grid-pattern";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/home/CommandPalette";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+const APP_URL = "https://ai-bio-generator-steel.vercel.app";
 
 export const metadata: Metadata = {
+  title: "BioLoom — AI Bio Generator",
+  description:
+    "Generate 4 unique bios in seconds. 8 AI models, 5 platforms, 6 tones. Free forever — no signup required.",
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    title: "BioLoom — AI Bio Generator",
+    description: "4 unique bios in seconds. Free, no signup.",
+    url: APP_URL,
+    siteName: "BioLoom",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BioLoom — AI Bio Generator",
+    description: "4 unique bios in seconds. 8 AI models. Free forever.",
+  },
   icons: {
     icon: [{ url: "/icon.png" }, { url: "/favicon.ico" }],
     apple: "/apple-icon.png",
@@ -43,6 +63,8 @@ export default function RootLayout({
           <CommandPalette />
           <Toaster position="top-right" richColors closeButton />
         </TooltipProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

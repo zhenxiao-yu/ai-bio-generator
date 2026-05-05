@@ -13,6 +13,7 @@ import { XIcon } from "@/components/icons/XIcon";
 import { cn } from "@/lib/utils";
 import { useBioStore } from "@/store/bioStore";
 import { useBioExport } from "@/hooks/useBioExport";
+import { track } from "@vercel/analytics";
 import type { BioScore, Platform } from "@/types";
 import { toast } from "sonner";
 
@@ -55,6 +56,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score, isStrea
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      track("bio_copied", { platform });
 
       // Lazy-load confetti and fire from button position
       const confetti = (await import("canvas-confetti")).default;

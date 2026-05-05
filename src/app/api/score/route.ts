@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 30;
 import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
@@ -129,7 +131,9 @@ Be a demanding critic. Most bios deserve 55–70/100. A truly great bio earns 85
 
       const result = { overall, scores: object.scores, tips: object.tips };
       setCachedScore(bio, platform, result);
-      return NextResponse.json(result);
+      return NextResponse.json(result, {
+        headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" },
+      });
     } catch (err) {
       const isLast = modelId === scorers[scorers.length - 1];
       if (isLast) {

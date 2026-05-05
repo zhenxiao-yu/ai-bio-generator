@@ -32,6 +32,8 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.4",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^4.3.0",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",

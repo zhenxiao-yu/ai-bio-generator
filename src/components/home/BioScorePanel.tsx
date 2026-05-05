@@ -6,6 +6,7 @@ import { Sparkles, Loader2, ChevronDown, ChevronUp, Zap, Eye, Monitor, Flame, St
 import { Button } from "@/components/shadcn-ui/button";
 import type { BioScore, Platform } from "@/types";
 import { useBioStore } from "@/store/bioStore";
+import { track } from "@vercel/analytics";
 
 interface BioScorePanelProps {
   text: string;
@@ -82,6 +83,7 @@ const BioScorePanel = ({ text, index, platform, score }: BioScorePanelProps) => 
         const data = (await res.json()) as BioScore;
         setBioScore(index, data);
         setExpanded(true);
+        track("bio_scored", { platform, overall: data.overall });
       }
     } finally {
       setLoading(false);

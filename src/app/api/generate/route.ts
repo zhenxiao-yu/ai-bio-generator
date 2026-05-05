@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60; // seconds — allows slow reasoning models to finish
 import { generateObject, streamObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
