@@ -122,6 +122,7 @@ const Output = () => {
                     characterLimit={characterLimit}
                     score={bio.score}
                     isStreaming={loading}
+                    style={{ animationDelay: `${index * 90}ms` }}
                   />
                 ) : loading ? (
                   <BioCardSkeleton key={index} />

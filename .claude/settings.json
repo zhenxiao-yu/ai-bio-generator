@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b)",
+      "Bash(node -e \"const p = require\\('./node_modules/lucide-react/package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(npx vitest *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/)",
+      "Bash(Get-ChildItem -Path \"h:\\\\Github\\\\ai-bio-generator\" -Recurse -Directory)",
+      "Bash(npm view *)",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); const v15=d.filter\\(v=>v.startsWith\\('15.'\\)\\); console.log\\(v15.slice\\(-10\\).join\\('\\\\n'\\)\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/next/package.json'\\).version\\)\")",
+      "Bash(git commit -m 'chore: upgrade Next.js 15.3.2 → 15.3.9 \\(patches CVE-2025-66478\\) *)",
+      "Bash(Get-ChildItem -Path \"h:\\\\Github\\\\ai-bio-generator\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName, PSIsContainer)",
+      "Bash(ConvertTo-Json)",
+      "Bash(ConvertFrom-Json)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

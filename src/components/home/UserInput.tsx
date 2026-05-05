@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/shadcn-ui/button";
 import {
@@ -22,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/shadcn-ui/select";
 import MetaIcon from "../icons/Meta";
-import { Cpu } from "lucide-react";
+import { Cpu, Trophy, Code2, Smile, Target, Palette, Crown, Users, Briefcase, Handshake, Globe } from "lucide-react";
 import { Slider } from "../shadcn-ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn-ui/tooltip";
 import { Info, Loader2, Square } from "lucide-react";
@@ -32,7 +33,30 @@ import { useBioStore } from "@/store/bioStore";
 import PlatformSelector from "./PlatformSelector";
 import TemplatesModal from "./TemplatesModal";
 import { useTypewriter } from "@/hooks/useTypewriter";
-import type { Platform, Template } from "@/types";
+import type { FocusArea, Platform, Template } from "@/types";
+
+const FOCUS_AREAS: { value: FocusArea; label: string; icon: React.ElementType; description: string }[] = [
+  { value: "achievements", label: "Achievements", icon: Trophy, description: "Wins & milestones" },
+  { value: "skills", label: "Skills", icon: Code2, description: "Expertise & tools" },
+  { value: "personality", label: "Personality", icon: Smile, description: "Character & vibe" },
+  { value: "mission", label: "Mission", icon: Target, description: "Purpose & why" },
+  { value: "creativity", label: "Creativity", icon: Palette, description: "Art & originality" },
+  { value: "leadership", label: "Leadership", icon: Crown, description: "Vision & impact" },
+];
+
+const AUDIENCES = [
+  { value: "general", label: "General audience", icon: Globe },
+  { value: "recruiters", label: "Recruiters", icon: Briefcase },
+  { value: "clients", label: "Potential clients", icon: Handshake },
+  { value: "peers", label: "Industry peers", icon: Users },
+  { value: "community", label: "Followers / fans", icon: Users },
+];
+
+const LENGTHS = [
+  { value: "short", label: "Short", hint: "Punchy" },
+  { value: "balanced", label: "Balanced", hint: "Ideal" },
+  { value: "full", label: "Full", hint: "Rich" },
+] as const;
 
 const formSchema = z.object({
   model: z.string().min(1, "Model is required!"),
@@ -52,11 +76,28 @@ const formSchema = z.object({
     { errorMap: () => ({ message: "Tone is required!" }) }
   ),
   emojis: z.boolean(),
+  focusAreas: z.array(z.string()).max(3),
+  audience: z.string(),
+  length: z.enum(["short", "balanced", "full"]),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
+const MAX_FOCUS = 3;
+
+function CharCounter({ value, max }: { value: string; max: number }) {
+  const len = value.length;
+  const pct = len / max;
+  const color =
+    pct >= 1 ? "text-destructive" : pct >= 0.9 ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground";
+  return (
+    <span className={cn("text-xs tabular-nums transition-colors", color)}>
+      {len}/{max}
+    </span>
+  );
+}
 
 const UserInput = () => {
   const {
@@ -82,10 +123,15 @@ const UserInput = () => {
       type: "personal",
       tone: "professional",
       emojis: false,
+      focusAreas: [],
+      audience: "general",
+      length: "balanced",
     },
   });
 
-  // Show toast on error
+  const contentValue = form.watch("content");
+  const focusAreasValue = form.watch("focusAreas");
+
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -103,12 +149,14 @@ const UserInput = () => {
         tone: values.tone,
         emojis: values.emojis,
         platform,
+        focusAreas: values.focusAreas,
+        audience: values.audience,
+        length: values.length,
       });
     },
     [generateBios, platform]
   );
 
-  // Cmd+Enter to generate
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -120,7 +168,6 @@ const UserInput = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [loading, form, onSubmit]);
 
-  // CustomEvent from command palette
   useEffect(() => {
     const handleGenerate = () => {
       if (!loading) form.handleSubmit(onSubmit)();
@@ -129,7 +176,6 @@ const UserInput = () => {
     return () => window.removeEventListener("bioloom:generate", handleGenerate);
   }, [loading, form, onSubmit]);
 
-  // Cleanup typewriter on unmount
   useEffect(() => () => stopTyping(), [stopTyping]);
 
   const handleTemplateSelect = (template: Template) => {
@@ -145,10 +191,21 @@ const UserInput = () => {
 
   const fillExampleContent = () => {
     stopTyping();
-    form.setValue(
-      "content",
-      "Game developer & software engineer. Crafting engaging 2D/3D games and innovative digital solutions. Follow for tech insights and creativity!"
+    typeText(
+      "Game developer & software engineer. Crafting engaging 2D/3D games and innovative digital solutions. Follow for tech insights and creativity!",
+      (val: string) => form.setValue("content", val, { shouldValidate: false })
     );
+  };
+
+  const toggleFocusArea = (area: FocusArea) => {
+    const current = focusAreasValue as FocusArea[];
+    if (current.includes(area)) {
+      form.setValue("focusAreas", current.filter((a) => a !== area));
+    } else if (current.length < MAX_FOCUS) {
+      form.setValue("focusAreas", [...current, area]);
+    } else {
+      toast.info(`Pick up to ${MAX_FOCUS} focus areas.`);
+    }
   };
 
   return (
@@ -160,60 +217,54 @@ const UserInput = () => {
       </div>
 
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="grid w-full items-start gap-6"
-        >
-          {/* User Input Fieldset — Primary */}
-          <fieldset className="grid gap-6 rounded-[8px] border p-4 bg-background/10 backdrop-blur-sm">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid w-full items-start gap-5">
+
+          {/* ── Your Info ─────────────────────────────────────────── */}
+          <fieldset className="grid gap-5 rounded-xl border border-border/60 p-4 bg-background/10 backdrop-blur-sm transition-all focus-within:border-foreground/30 focus-within:shadow-sm">
             <legend className="-ml-1 px-1 text-sm font-medium">Your Info</legend>
 
-            <div className="grid gap-3">
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center justify-between pb-2">
-                      About Yourself
-                      <div className="flex gap-2">
-                        <TemplatesModal
-                          onSelect={handleTemplateSelect}
-                          open={templatesModalOpen}
-                          onOpenChange={setTemplatesModalOpen}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          type="button"
-                          onClick={fillExampleContent}
-                        >
-                          Example
-                        </Button>
-                      </div>
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Share your previous bio or describe yourself in a few sentences"
-                        className="min-h-[10rem]"
-                        readOnly={isTyping}
-                        onClick={() => { if (isTyping) stopTyping(); }}
-                        onFocus={() => { if (isTyping) stopTyping(); }}
+            {/* Content textarea */}
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center justify-between pb-1.5">
+                    About Yourself
+                    <div className="flex items-center gap-2">
+                      <CharCounter value={contentValue} max={500} />
+                      <TemplatesModal
+                        onSelect={handleTemplateSelect}
+                        open={templatesModalOpen}
+                        onOpenChange={setTemplatesModalOpen}
                       />
-                    </FormControl>
-                    {isTyping && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <span className="inline-block w-1 h-3 bg-foreground animate-pulse rounded-sm" />
-                        Click to stop typing
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <Button variant="outline" size="sm" type="button" onClick={fillExampleContent}>
+                        Example
+                      </Button>
+                    </div>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Share your previous bio or describe yourself in a few sentences — your role, achievements, personality, and what makes you unique."
+                      className="min-h-[9rem] resize-none transition-colors"
+                      readOnly={isTyping}
+                      onClick={() => { if (isTyping) stopTyping(); }}
+                      onFocus={() => { if (isTyping) stopTyping(); }}
+                    />
+                  </FormControl>
+                  {isTyping && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span className="inline-block w-1 h-3 bg-foreground animate-pulse rounded-sm" />
+                      Click to stop typing
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            {/* Type + Tone row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
@@ -252,10 +303,10 @@ const UserInput = () => {
                       <SelectContent>
                         <SelectItem value="professional">Professional</SelectItem>
                         <SelectItem value="casual">Casual</SelectItem>
-                        <SelectItem value="sarcastic">Sarcastic</SelectItem>
-                        <SelectItem value="funny">Funny</SelectItem>
                         <SelectItem value="passionate">Passionate</SelectItem>
                         <SelectItem value="thoughtful">Thoughtful</SelectItem>
+                        <SelectItem value="sarcastic">Sarcastic</SelectItem>
+                        <SelectItem value="funny">Funny</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -264,18 +315,75 @@ const UserInput = () => {
               />
             </div>
 
-            <div className="grid gap-3">
+            {/* Focus areas */}
+            <div>
+              <p className="text-sm font-medium mb-2 flex items-center justify-between">
+                Focus Areas
+                <span className="text-xs font-normal text-muted-foreground">
+                  {focusAreasValue.length}/{MAX_FOCUS} selected
+                </span>
+              </p>
+              <div className="grid grid-cols-2 xs:grid-cols-3 gap-2">
+                {FOCUS_AREAS.map(({ value, label, icon: Icon, description }) => {
+                  const selected = (focusAreasValue as FocusArea[]).includes(value);
+                  return (
+                    <Tooltip key={value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => toggleFocusArea(value)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium border transition-all duration-150",
+                            "hover:border-foreground/40 active:scale-[0.97]",
+                            selected
+                              ? "bg-foreground text-background border-foreground shadow-sm"
+                              : "bg-background/50 text-muted-foreground border-border/60"
+                          )}
+                          aria-pressed={selected}
+                        >
+                          <Icon className="w-3.5 h-3.5 shrink-0" />
+                          {label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">{description}</TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Audience + Emojis row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-end">
+              <FormField
+                control={form.control}
+                name="audience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Written for</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select audience" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {AUDIENCES.map(({ value, label }) => (
+                          <SelectItem key={value} value={value}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="emojis"
                 render={({ field }) => (
-                  <FormItem className="flex items-center">
-                    <FormLabel className="text-sm mr-4">Add Emojis</FormLabel>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      className="!my-0"
-                    />
+                  <FormItem className="flex items-center gap-3 pb-0.5">
+                    <Switch checked={field.value} onCheckedChange={field.onChange} className="!my-0" />
+                    <FormLabel className="text-sm cursor-pointer select-none">Add Emojis</FormLabel>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -283,129 +391,150 @@ const UserInput = () => {
             </div>
           </fieldset>
 
-          {/* Settings Fieldset — Secondary */}
-          <fieldset className="grid gap-6 rounded-[8px] border p-4 bg-background/10 backdrop-blur-sm">
+          {/* ── Settings ──────────────────────────────────────────── */}
+          <fieldset className="grid gap-5 rounded-xl border border-border/60 p-4 bg-background/10 backdrop-blur-sm transition-all focus-within:border-foreground/30 focus-within:shadow-sm">
             <legend className="-ml-1 px-1 text-sm font-medium">Settings</legend>
 
-            <div className="grid gap-3">
-              <FormField
-                control={form.control}
-                name="model"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a model" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="llama-3.1-8b-instant">
-                            <div className="flex items-start gap-3 text-muted-foreground">
-                              <MetaIcon className="size-5" />
-                              <div>
-                                <p>
-                                  <span className="text-foreground font-medium mr-2">Llama 3.1</span>
-                                  8B Instant
-                                </p>
-                              </div>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="gemma2-9b-it">
-                            <div className="flex items-start gap-3 text-muted-foreground">
-                              <Cpu className="size-5" />
-                              <div>
-                                <p>
-                                  <span className="text-foreground font-medium mr-2">Gemma 2</span>
-                                  9B
-                                </p>
-                              </div>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="llama-3.3-70b-versatile">
-                            <div className="flex items-start gap-3 text-muted-foreground">
-                              <MetaIcon className="size-5" />
-                              <div>
-                                <p>
-                                  <span className="text-foreground font-medium mr-2">Llama 3.3</span>
-                                  70B Versatile
-                                </p>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Length preset */}
+            <FormField
+              control={form.control}
+              name="length"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio Length</FormLabel>
+                  <div className="flex gap-2 mt-1">
+                    {LENGTHS.map(({ value, label, hint }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => field.onChange(value)}
+                        className={cn(
+                          "flex-1 flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-xs transition-all duration-150 hover:border-foreground/40 active:scale-[0.97]",
+                          field.value === value
+                            ? "bg-foreground text-background border-foreground shadow-sm"
+                            : "bg-background/50 text-muted-foreground border-border/60"
+                        )}
+                        aria-pressed={field.value === value}
+                      >
+                        <span className="font-medium">{label}</span>
+                        <span className={cn("text-[10px]", field.value === value ? "text-background/70" : "text-muted-foreground/70")}>{hint}</span>
+                      </button>
+                    ))}
+                  </div>
+                </FormItem>
+              )}
+            />
 
-            <div className="grid gap-3">
-              <FormField
-                control={form.control}
-                name="temperature"
-                render={({ field: { value, onChange } }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center justify-between pb-2">
-                      <span className="flex items-center justify-center">
-                        Creativity
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="w-4 h-4 ml-1 cursor-pointer" />
-                          </TooltipTrigger>
-                          <TooltipContent
-                            sideOffset={25}
-                            collisionPadding={20}
-                            className="max-w-sm"
-                          >
-                            <p>
-                              A higher setting produces more creative and surprising bios, while a
-                              lower setting sticks to more predictable and conventional styles.
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </span>
-                      <span>{value}</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Slider
-                        defaultValue={[1]}
-                        min={0}
-                        max={2}
-                        step={0.1}
-                        onValueChange={(val) => onChange(val[0])}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Model */}
+            <FormField
+              control={form.control}
+              name="model"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Model</FormLabel>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="llama-3.1-8b-instant">
+                          <div className="flex items-start gap-3 text-muted-foreground">
+                            <MetaIcon className="size-5" />
+                            <div>
+                              <p>
+                                <span className="text-foreground font-medium mr-2">Llama 3.1</span>
+                                8B · Fast
+                              </p>
+                            </div>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemma2-9b-it">
+                          <div className="flex items-start gap-3 text-muted-foreground">
+                            <Cpu className="size-5" />
+                            <div>
+                              <p>
+                                <span className="text-foreground font-medium mr-2">Gemma 2</span>
+                                9B · Balanced
+                              </p>
+                            </div>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="llama-3.3-70b-versatile">
+                          <div className="flex items-start gap-3 text-muted-foreground">
+                            <MetaIcon className="size-5" />
+                            <div>
+                              <p>
+                                <span className="text-foreground font-medium mr-2">Llama 3.3</span>
+                                70B · Best Quality
+                              </p>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Creativity / Temperature */}
+            <FormField
+              control={form.control}
+              name="temperature"
+              render={({ field: { value, onChange } }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center justify-between pb-2">
+                    <span className="flex items-center gap-1">
+                      Creativity
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4 cursor-pointer text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent sideOffset={25} collisionPadding={20} className="max-w-sm">
+                          <p>
+                            Higher = more surprising and unconventional bios. Lower = more predictable
+                            and safe. Start at 1.0 and tune from there.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </span>
+                    <span className="font-mono text-xs tabular-nums">{value.toFixed(1)}</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Slider defaultValue={[1]} min={0} max={2} step={0.1} onValueChange={(val) => onChange(val[0])} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </fieldset>
 
-          {/* Submit / Cancel */}
+          {/* ── Generate ──────────────────────────────────────────── */}
           <div className="flex gap-3">
-            <Button className="rounded flex-1" type="submit" disabled={loading}>
+            <Button
+              className={cn(
+                "relative flex-1 rounded-lg overflow-hidden font-semibold transition-all duration-200",
+                "before:absolute before:inset-0 before:bg-gradient-to-r before:from-violet-600/20 before:via-blue-500/20 before:to-cyan-500/20",
+                "before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
+                loading && "animate-pulse-subtle"
+              )}
+              type="submit"
+              disabled={loading}
+            >
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Generate
+              {loading ? "Generating…" : "Generate Bios"}
             </Button>
             {loading && (
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded"
-                onClick={cancelGeneration}
-                aria-label="Stop generating"
-              >
+              <Button type="button" variant="outline" className="rounded-lg" onClick={cancelGeneration} aria-label="Stop generating">
                 <Square className="w-4 h-4 mr-2" />
                 Stop
               </Button>
             )}
           </div>
           {!loading && (
-            <p className="text-xs text-muted-foreground text-center -mt-3">
+            <p className="text-xs text-muted-foreground text-center -mt-2">
               Press{" "}
               <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border font-mono text-xs">
                 {isMac ? "⌘↵" : "Ctrl+↵"}

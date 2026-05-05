@@ -10,6 +10,18 @@ export type BioTone =
 
 export type BioType = "personal" | "brand";
 
+export type FocusArea =
+  | "achievements"
+  | "skills"
+  | "personality"
+  | "mission"
+  | "creativity"
+  | "leadership";
+
+export type Audience = "general" | "recruiters" | "clients" | "peers" | "community";
+
+export type BioLength = "short" | "balanced" | "full";
+
 export interface PlatformConfig {
   name: string;
   characterLimit: number;
@@ -26,17 +38,21 @@ export interface FormValues {
   tone: BioTone;
   emojis: boolean;
   platform: Platform;
+  focusAreas: FocusArea[];
+  audience: Audience;
+  length: BioLength;
 }
 
 export interface BioScore {
   overall: number;
   scores: {
+    hook: number;
     clarity: number;
     platformFit: number;
-    keywords: number;
-    brevity: number;
+    impact: number;
+    originality: number;
   };
-  tip: string;
+  tips: string[];
 }
 
 export interface HistoryEntry {

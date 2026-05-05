@@ -22,6 +22,9 @@ const requestSchema = z.object({
     .enum(["general", "twitter", "linkedin", "instagram", "github"])
     .optional()
     .default("general"),
+  focusAreas: z.array(z.string()).optional().default([]),
+  audience: z.string().optional().default("general"),
+  length: z.string().optional().default("balanced"),
 });
 
 const bioSchema = z.object({
@@ -86,9 +89,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { model, temperature, content, type, tone, emojis, platform } = parsed.data;
-  const systemPrompt = buildSystemPrompt(platform as Platform);
-  const userPrompt = buildUserPrompt(content, tone, type, emojis);
+  const { model, temperature, content, type, tone, emojis, platform, focusAreas, audience, length } = parsed.data;
+  const systemPrompt = buildSystemPrompt(platform as Platform, audience, length, focusAreas);
+  const userPrompt = buildUserPrompt(content, tone, type, emojis, audience, focusAreas, length);
 
   // ── Streaming path ───────────────────────────────────────────────────────
   if (streaming) {

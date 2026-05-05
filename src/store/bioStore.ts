@@ -60,6 +60,9 @@ export interface GeneratePayload {
   tone: string;
   emojis: boolean;
   platform?: Platform;
+  focusAreas?: string[];
+  audience?: string;
+  length?: string;
 }
 
 const MAX_HISTORY = 20;
