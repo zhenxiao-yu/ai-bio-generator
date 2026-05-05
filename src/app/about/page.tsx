@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/shadcn-ui/badge";
+import { Button } from "@/components/shadcn-ui/button";
 import {
   ArrowLeft,
   Github,

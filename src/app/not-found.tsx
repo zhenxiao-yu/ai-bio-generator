@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shadcn-ui/button";
 import { Home, Zap } from "lucide-react";
 
 export default function NotFound() {
