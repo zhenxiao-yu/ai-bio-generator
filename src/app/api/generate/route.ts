@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
 
         let succeeded = false;
+        let lastErr: unknown;
 
         for (const modelId of modelChain) {
           try {
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
             succeeded = true;
             break; // done
           } catch (err) {
+            lastErr = err;
             const isLast = modelId === modelChain[modelChain.length - 1];
             if (isLast || !isRetryable(err)) {
               send({ __error: classifyError(err) });
@@ -119,8 +121,9 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        if (!succeeded) {
-          // All models exhausted without sending an error yet — edge case
+        if (!succeeded && lastErr) {
+          // Defensive: all models exhausted without the loop sending an error
+          send({ __error: classifyError(lastErr) });
         }
 
         controller.close();

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { PLATFORMS } from "@/config/platforms";
 import { getCachedScore, setCachedScore } from "@/lib/scoreCache";
 import { withRetry } from "@/lib/withRetry";
+import { classifyError, isRetryable } from "@/lib/modelRegistry";
 import type { Platform } from "@/types";
 
 const groq = createOpenAI({
@@ -109,6 +110,8 @@ Be a demanding critic. Most bios deserve 55–70/100. A truly great bio earns 85
   // Primary scorer: llama-3.3-70b for scoring quality; fallback to gemini-2.0-flash
   const scorers = ["llama-3.3-70b-versatile", "gemini-2.0-flash"] as const;
 
+  let lastErr: unknown;
+
   for (const modelId of scorers) {
     try {
       const isGemini = modelId === "gemini-2.0-flash";
@@ -135,14 +138,17 @@ Be a demanding critic. Most bios deserve 55–70/100. A truly great bio earns 85
         headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" },
       });
     } catch (err) {
+      lastErr = err;
       const isLast = modelId === scorers[scorers.length - 1];
-      if (isLast) {
-        console.error("[score] all scorers failed:", err);
-        return NextResponse.json({ error: "Scoring failed. Please try again." }, { status: 500 });
+      if (isLast || !isRetryable(err)) {
+        const { error, code, status } = classifyError(err);
+        console.error("[score] scorer failed:", modelId, err);
+        return NextResponse.json({ error, code }, { status });
       }
       // Try next scorer
     }
   }
 
-  return NextResponse.json({ error: "Scoring failed. Please try again." }, { status: 500 });
+  const { error, code, status } = classifyError(lastErr);
+  return NextResponse.json({ error, code }, { status });
 }
