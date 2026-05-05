@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Loader2, ChevronDown, ChevronUp, Lightbulb, Zap, Eye, Monitor, Flame, Star } from "lucide-react";
+import { Sparkles, Loader2, ChevronDown, ChevronUp, Zap, Eye, Monitor, Flame, Star } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
 import type { BioScore, Platform } from "@/types";
 import { useBioStore } from "@/store/bioStore";
