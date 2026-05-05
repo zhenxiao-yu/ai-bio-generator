@@ -16,8 +16,9 @@ import { useBioExport } from "@/hooks/useBioExport";
 import { track } from "@vercel/analytics";
 import type { BioScore, Platform } from "@/types";
 import { toast } from "sonner";
+import { SITE_URL } from "@/lib/siteConfig";
 
-const BIOLOOM_URL = "https://ai-bio-generator-steel.vercel.app";
+const BIOLOOM_URL = SITE_URL;
 
 function buildXShareUrl(text: string): string {
   const tweet = `${text.slice(0, 200)}\n\nGenerated with BioLoom — ${BIOLOOM_URL}`;

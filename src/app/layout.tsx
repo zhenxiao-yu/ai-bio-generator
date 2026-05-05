@@ -8,25 +8,41 @@ import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/home/CommandPalette";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-const APP_URL = "https://ai-bio-generator-steel.vercel.app";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_AUTHOR,
+} from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
-  title: "BioLoom — AI Bio Generator",
-  description:
-    "Generate 4 unique bios in seconds. 8 AI models, 5 platforms, 6 tones. Free forever — no signup required.",
-  metadataBase: new URL(APP_URL),
+  title: { default: `${SITE_NAME} — ${SITE_TAGLINE}`, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_AUTHOR }],
+  creator: SITE_AUTHOR,
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "BioLoom — AI Bio Generator",
-    description: "4 unique bios in seconds. Free, no signup.",
-    url: APP_URL,
-    siteName: "BioLoom",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "BioLoom — AI Bio Generator",
-    description: "4 unique bios in seconds. 8 AI models. Free forever.",
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    creator: "@zhenxiaoyu",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
   icons: {
     icon: [{ url: "/icon.png" }, { url: "/favicon.ico" }],
@@ -43,6 +59,31 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* Anti-FOUT: apply stored theme before first paint */}
       <head>
+        {/* JSON-LD structured data — helps Google understand this is a WebApplication */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: SITE_NAME,
+              url: SITE_URL,
+              description: SITE_DESCRIPTION,
+              applicationCategory: "UtilitiesApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+              author: { "@type": "Person", name: SITE_AUTHOR },
+              featureList: [
+                "AI-powered bio generation",
+                "8 AI models",
+                "5 platform presets",
+                "6 tone options",
+                "Streaming output",
+                "Bio quality scoring",
+              ],
+            }),
+          }}
+        />
         {/* DNS prefetch — shaves ~50–150ms off the first API call cold start */}
         <link rel="dns-prefetch" href="https://api.groq.com" />
         <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />

@@ -8,23 +8,6 @@ import Header from "@/components/layout/Header";
 import { HeroSection } from "@/components/home/HeroSection";
 import { StatsSection } from "@/components/home/StatsSection";
 import { SharedBioModal } from "@/components/home/SharedBioModal";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "BioLoom — AI Bio Generator",
-  description:
-    "Generate your perfect social media bio with the help of AI. BioLoom crafts personalized and compelling bios for LinkedIn, Twitter, Instagram, GitHub, and more.",
-  authors: [{ name: "Zhenxiao Yu" }],
-  keywords: [
-    "Bio Generator",
-    "AI Bio Generator",
-    "Next.js",
-    "Social Media Bio",
-    "AI",
-    "Personal Branding",
-    "Professional Networking",
-  ],
-};
 
 const Footer = () => (
   <footer className="py-6 border-t border-border text-center bg-background">
