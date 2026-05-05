@@ -9,7 +9,6 @@ import {
   Shield,
   Layers,
   Terminal,
-  Key,
   Rocket,
   CheckCircle2,
   ExternalLink,
