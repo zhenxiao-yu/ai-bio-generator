@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { PLATFORMS } from "@/config/platforms";
+import { getCachedScore, setCachedScore } from "@/lib/scoreCache";
+import { withRetry } from "@/lib/withRetry";
 import type { Platform } from "@/types";
 
 const groq = createOpenAI({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY ?? "",
   baseURL: "https://api.groq.com/openai/v1",
 });
 
@@ -63,6 +66,10 @@ export async function POST(request: NextRequest) {
   }
 
   const { bio, platform } = parsed.data;
+
+  const cached = getCachedScore(bio, platform);
+  if (cached) return NextResponse.json(cached);
+
   const platformConfig = PLATFORMS[platform as Platform];
 
   const systemPrompt = `You are a world-class bio coach and copywriter who has reviewed thousands of social media profiles. You give brutally honest, highly specific feedback that actually moves the needle.
@@ -89,30 +96,49 @@ TIPS — provide exactly 3 improvements, ordered by highest impact first. Each t
 
 Be a demanding critic. Most bios deserve 55–70/100. A truly great bio earns 85+.`;
 
-  try {
-    const { object } = await generateObject({
-      model: groq("llama-3.3-70b-versatile"),
-      system: systemPrompt,
-      prompt: `Score this bio:\n\n"${bio}"`,
-      temperature: 0.2,
-      maxTokens: 512,
-      mode: "json",
-      schema: scoreSchema,
-    });
+  const baseArgs = {
+    system: systemPrompt,
+    prompt: `Score this bio:\n\n"${bio}"`,
+    temperature: 0.2,
+    maxTokens: 512,
+    schema: scoreSchema,
+  };
 
-    const overall =
-      object.scores.hook +
-      object.scores.clarity +
-      object.scores.platformFit +
-      object.scores.impact +
-      object.scores.originality;
+  // Primary scorer: llama-3.3-70b for scoring quality; fallback to gemini-2.0-flash
+  const scorers = ["llama-3.3-70b-versatile", "gemini-2.0-flash"] as const;
 
-    return NextResponse.json({
-      overall,
-      scores: object.scores,
-      tips: object.tips,
-    });
-  } catch {
-    return NextResponse.json({ error: "Scoring failed. Please try again." }, { status: 500 });
+  for (const modelId of scorers) {
+    try {
+      const isGemini = modelId === "gemini-2.0-flash";
+      const model = isGemini ? google(modelId) : groq(modelId);
+
+      const { object } = await withRetry(() =>
+        generateObject({
+          model,
+          ...baseArgs,
+          ...(isGemini ? {} : { mode: "json" as const }),
+        })
+      );
+
+      const overall =
+        object.scores.hook +
+        object.scores.clarity +
+        object.scores.platformFit +
+        object.scores.impact +
+        object.scores.originality;
+
+      const result = { overall, scores: object.scores, tips: object.tips };
+      setCachedScore(bio, platform, result);
+      return NextResponse.json(result);
+    } catch (err) {
+      const isLast = modelId === scorers[scorers.length - 1];
+      if (isLast) {
+        console.error("[score] all scorers failed:", err);
+        return NextResponse.json({ error: "Scoring failed. Please try again." }, { status: 500 });
+      }
+      // Try next scorer
+    }
   }
+
+  return NextResponse.json({ error: "Scoring failed. Please try again." }, { status: 500 });
 }

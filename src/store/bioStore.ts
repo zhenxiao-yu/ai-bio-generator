@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { nanoid } from "nanoid";
 import type { Platform, HistoryEntry, BioScore } from "@/types";
 import { PLATFORMS, PLATFORM_ORDER } from "@/config/platforms";
 
@@ -190,7 +191,7 @@ export const useBioStore = create<BioState & BioActions>()(
 
           const platform = payload.platform ?? get().platform;
           const entry: HistoryEntry = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: nanoid(10),
             timestamp: Date.now(),
             platform,
             bios: completedBios.map((b) => b.text),
@@ -269,7 +270,7 @@ export const useBioStore = create<BioState & BioActions>()(
       addToHistory: (entry) => {
         const newEntry: HistoryEntry = {
           ...entry,
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          id: nanoid(10),
         };
         const history = [newEntry, ...get().history].slice(0, MAX_HISTORY);
         set({ history });

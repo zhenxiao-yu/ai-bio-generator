@@ -23,7 +23,13 @@ import {
   SelectValue,
 } from "@/components/shadcn-ui/select";
 import MetaIcon from "../icons/Meta";
-import { Cpu, Trophy, Code2, Smile, Target, Palette, Crown, Users, Briefcase, Handshake, Globe } from "lucide-react";
+import MistralIcon from "../icons/Mistral";
+import GoogleIcon from "../icons/Google";
+import DeepSeekIcon from "../icons/DeepSeek";
+import QwenIcon from "../icons/Qwen";
+import { MODELS } from "@/lib/modelRegistry";
+import type { ModelDef } from "@/lib/modelRegistry";
+import { Cpu, Trophy, Code2, Smile, Target, Palette, Crown, Users, Briefcase, Handshake, Globe, Brain } from "lucide-react";
 import { Slider } from "../shadcn-ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn-ui/tooltip";
 import { Info, Loader2, Square } from "lucide-react";
@@ -34,6 +40,17 @@ import PlatformSelector from "./PlatformSelector";
 import TemplatesModal from "./TemplatesModal";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import type { FocusArea, Platform, Template } from "@/types";
+
+function ModelIcon({ def, className }: { def: ModelDef; className?: string }) {
+  switch (def.iconType) {
+    case "meta": return <MetaIcon className={className ?? "size-5"} />;
+    case "google": return <GoogleIcon className={className ?? "size-5"} />;
+    case "mistral": return <MistralIcon className={className ?? "size-5"} />;
+    case "deepseek": return <DeepSeekIcon className={className ?? "size-5"} />;
+    case "qwen": return <QwenIcon className={className ?? "size-5"} />;
+    default: return <Cpu className={className ?? "size-5"} />;
+  }
+}
 
 const FOCUS_AREAS: { value: FocusArea; label: string; icon: React.ElementType; description: string }[] = [
   { value: "achievements", label: "Achievements", icon: Trophy, description: "Wins & milestones" },
@@ -438,39 +455,26 @@ const UserInput = () => {
                         <SelectValue placeholder="Select a model" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="llama-3.1-8b-instant">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <MetaIcon className="size-5" />
-                            <div>
-                              <p>
-                                <span className="text-foreground font-medium mr-2">Llama 3.1</span>
-                                8B · Fast
-                              </p>
+                        {MODELS.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            <div className="flex items-start gap-3 text-muted-foreground">
+                              <ModelIcon def={m} />
+                              <div>
+                                <p className="flex items-center gap-1.5">
+                                  <span className="text-foreground font-medium">{m.name}</span>
+                                  <span className="text-xs">{m.tag}</span>
+                                  {m.isReasoning && (
+                                    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
+                                      <Brain className="w-2.5 h-2.5" />
+                                      Thinks
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-xs mt-0.5 leading-tight">{m.description}</p>
+                              </div>
                             </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="gemma2-9b-it">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Cpu className="size-5" />
-                            <div>
-                              <p>
-                                <span className="text-foreground font-medium mr-2">Gemma 2</span>
-                                9B · Balanced
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="llama-3.3-70b-versatile">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <MetaIcon className="size-5" />
-                            <div>
-                              <p>
-                                <span className="text-foreground font-medium mr-2">Llama 3.3</span>
-                                70B · Best Quality
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </FormControl>

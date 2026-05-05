@@ -4,12 +4,28 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { google } from "@ai-sdk/google";
 import { z } from "zod";
 import { buildSystemPrompt, buildUserPrompt } from "@/lib/promptBuilder";
+import {
+  MODEL_PROVIDER,
+  getFallbacks,
+  classifyError,
+  isRetryable,
+} from "@/lib/modelRegistry";
+import { withRetry } from "@/lib/withRetry";
 import type { Platform } from "@/types";
 
+// ── Providers ────────────────────────────────────────────────────────────────
+
 const groq = createOpenAI({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: process.env.GROQ_API_KEY ?? "",
   baseURL: "https://api.groq.com/openai/v1",
 });
+
+function getAIModel(modelId: string) {
+  const provider = MODEL_PROVIDER[modelId] ?? "groq";
+  return provider === "gemini" ? google(modelId) : groq(modelId);
+}
+
+// ── Request schema ────────────────────────────────────────────────────────────
 
 const requestSchema = z.object({
   model: z.string().min(1),
@@ -28,47 +44,10 @@ const requestSchema = z.object({
 });
 
 const bioSchema = z.object({
-  data: z.array(
-    z.object({
-      bio: z.string().describe("Generated bio text"),
-    })
-  ),
+  data: z.array(z.object({ bio: z.string().describe("Generated bio text") })),
 });
 
-function classifyError(err: unknown): { error: string; code: string; status: number } {
-  const message = err instanceof Error ? err.message : String(err);
-  if (message.includes("429") || message.toLowerCase().includes("rate limit")) {
-    return {
-      error: "Rate limit reached. Please wait a moment and try again.",
-      code: "RATE_LIMIT",
-      status: 429,
-    };
-  }
-  if (message.includes("401") || message.toLowerCase().includes("unauthorized")) {
-    return {
-      error: "API authentication failed. Check your GROQ_API_KEY.",
-      code: "AUTH",
-      status: 401,
-    };
-  }
-  if (message.includes("503") || message.toLowerCase().includes("unavailable")) {
-    return {
-      error: "The selected model is temporarily unavailable. Try a different model.",
-      code: "MODEL_UNAVAILABLE",
-      status: 503,
-    };
-  }
-  return {
-    error: "Something went wrong generating your bios. Please try again.",
-    code: "UNKNOWN",
-    status: 500,
-  };
-}
-
-function isRateLimit(err: unknown) {
-  const msg = err instanceof Error ? err.message : String(err);
-  return msg.includes("429") || msg.toLowerCase().includes("rate limit");
-}
+// ── Handler ───────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -89,11 +68,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { model, temperature, content, type, tone, emojis, platform, focusAreas, audience, length } = parsed.data;
+  const { model, temperature, content, type, tone, emojis, platform, focusAreas, audience, length } =
+    parsed.data;
+
   const systemPrompt = buildSystemPrompt(platform as Platform, audience, length, focusAreas);
   const userPrompt = buildUserPrompt(content, tone, type, emojis, audience, focusAreas, length);
 
-  // ── Streaming path ───────────────────────────────────────────────────────
+  // Models to try in order: [requested, ...fallbacks]
+  const modelChain = [model, ...getFallbacks(model)];
+
+  const sharedArgs = { system: systemPrompt, prompt: userPrompt, temperature, maxTokens: 1024 };
+
+  // ── Streaming path ──────────────────────────────────────────────────────────
   if (streaming) {
     const encoder = new TextEncoder();
 
@@ -102,94 +88,71 @@ export async function POST(request: NextRequest) {
         const send = (obj: unknown) =>
           controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
 
-        const runStream = async (useGroq: boolean) => {
-          const result = useGroq
-            ? streamObject({
-                model: groq(model),
-                system: systemPrompt,
-                prompt: userPrompt,
-                temperature,
-                maxTokens: 1024,
-                mode: "json",
-                schema: bioSchema,
-              })
-            : streamObject({
-                model: google("gemini-1.5-flash"),
-                system: systemPrompt,
-                prompt: userPrompt,
-                temperature,
-                maxTokens: 1024,
-                schema: bioSchema,
-              });
+        let succeeded = false;
 
-          for await (const partial of result.partialObjectStream) {
-            send(partial);
-          }
-        };
+        for (const modelId of modelChain) {
+          try {
+            const aiModel = getAIModel(modelId);
+            const result = streamObject({
+              model: aiModel,
+              ...sharedArgs,
+              // groq requires explicit json mode; gemini infers from schema
+              ...(MODEL_PROVIDER[modelId] !== "gemini" ? { mode: "json" as const } : {}),
+              schema: bioSchema,
+            });
 
-        try {
-          await runStream(true);
-        } catch (groqErr) {
-          if (isRateLimit(groqErr) && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-            try {
-              await runStream(false);
-            } catch (fallbackErr) {
-              send({ __error: classifyError(fallbackErr) });
+            for await (const partial of result.partialObjectStream) {
+              send(partial);
             }
-          } else {
-            send({ __error: classifyError(groqErr) });
+
+            succeeded = true;
+            break; // done
+          } catch (err) {
+            const isLast = modelId === modelChain[modelChain.length - 1];
+            if (isLast || !isRetryable(err)) {
+              send({ __error: classifyError(err) });
+              break;
+            }
+            // Try next model silently
           }
-        } finally {
-          controller.close();
         }
+
+        if (!succeeded) {
+          // All models exhausted without sending an error yet — edge case
+        }
+
+        controller.close();
       },
     });
 
-    return new Response(readable, {
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
+    return new Response(readable, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }
 
-  // ── Non-streaming path (batch / regenerate) ──────────────────────────────
-  const attemptGenerate = async (useGroq: boolean) => {
-    if (useGroq) {
-      return generateObject({
-        model: groq(model),
-        system: systemPrompt,
-        prompt: userPrompt,
-        temperature,
-        maxTokens: 1024,
-        mode: "json",
-        schema: bioSchema,
-      });
-    }
-    return generateObject({
-      model: google("gemini-1.5-flash"),
-      system: systemPrompt,
-      prompt: userPrompt,
-      temperature,
-      maxTokens: 1024,
-      schema: bioSchema,
-    });
-  };
-
-  try {
-    let result;
+  // ── Non-streaming path ──────────────────────────────────────────────────────
+  for (const modelId of modelChain) {
     try {
-      result = await attemptGenerate(true);
-    } catch (groqErr) {
-      const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
-      const rateLimit = groqMsg.includes("429") || groqMsg.toLowerCase().includes("rate limit");
-      if (rateLimit && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-        result = await attemptGenerate(false);
-      } else {
-        throw groqErr;
+      const result = await withRetry(() =>
+        generateObject({
+          model: getAIModel(modelId),
+          ...sharedArgs,
+          ...(MODEL_PROVIDER[modelId] !== "gemini" ? { mode: "json" as const } : {}),
+          schema: bioSchema,
+        })
+      );
+      return NextResponse.json({ success: true, data: result.object.data });
+    } catch (err) {
+      const isLast = modelId === modelChain[modelChain.length - 1];
+      if (isLast || !isRetryable(err)) {
+        const { error, code, status } = classifyError(err);
+        return NextResponse.json({ success: false, error, code }, { status });
       }
+      // Try next model
     }
-
-    return NextResponse.json({ success: true, data: result.object.data });
-  } catch (err) {
-    const { error, code, status } = classifyError(err);
-    return NextResponse.json({ success: false, error, code }, { status });
   }
+
+  // Should never reach here
+  return NextResponse.json(
+    { success: false, error: "All models exhausted.", code: "UNKNOWN" },
+    { status: 500 }
+  );
 }
