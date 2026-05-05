@@ -7,6 +7,24 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { track } from "@vercel/analytics";
 
+const PREFS_KEY = "bioloom-prefs";
+
+function loadPrefs() {
+  if (typeof window === "undefined") return null;
+  try { return JSON.parse(localStorage.getItem(PREFS_KEY) ?? "null"); } catch { return null; }
+}
+function savePrefs(v: { model: string; tone: string; type: string; emojis: boolean }) {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(v)); } catch {}
+}
+
+const PLATFORM_PLACEHOLDERS: Record<Platform, string> = {
+  general:   "Describe yourself — role, wins, personality, and what makes you unique.",
+  twitter:   "Quick hook: who you are + what you do in one punchy line.",
+  linkedin:  "Professional journey: role, expertise, key achievements, and the value you bring.",
+  instagram: "Your vibe: passions, personality, and what followers get from you.",
+  github:    "Tech stack, open-source projects, what you're building right now.",
+};
+
 import { Button } from "@/components/shadcn-ui/button";
 import {
   Form,
@@ -147,6 +165,12 @@ const UserInput = () => {
     },
   });
 
+  // Restore last-used model/tone/type/emojis after mount (avoids SSR hydration mismatch)
+  useEffect(() => {
+    const saved = loadPrefs();
+    if (saved) form.reset({ ...form.getValues(), ...saved });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const contentValue = form.watch("content");
   const focusAreasValue = form.watch("focusAreas");
 
@@ -159,6 +183,7 @@ const UserInput = () => {
 
   const onSubmit = useCallback(
     async (values: FormValues) => {
+      savePrefs({ model: values.model, tone: values.tone, type: values.type, emojis: values.emojis });
       track("bio_generated", {
         model: values.model,
         platform,
@@ -167,6 +192,7 @@ const UserInput = () => {
         length: values.length ?? "balanced",
         focusAreaCount: (values.focusAreas ?? []).length,
       });
+      document.getElementById("output")?.scrollIntoView({ behavior: "smooth", block: "start" });
       await generateBios({
         model: values.model,
         temperature: values.temperature,
@@ -272,7 +298,7 @@ const UserInput = () => {
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Share your previous bio or describe yourself in a few sentences — your role, achievements, personality, and what makes you unique."
+                      placeholder={PLATFORM_PLACEHOLDERS[platform as Platform] ?? PLATFORM_PLACEHOLDERS.general}
                       className="min-h-[9rem] resize-none transition-colors"
                       readOnly={isTyping}
                       onClick={() => { if (isTyping) stopTyping(); }}

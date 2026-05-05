@@ -43,6 +43,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* Anti-FOUT: apply stored theme before first paint */}
       <head>
+        {/* DNS prefetch — shaves ~50–150ms off the first API call cold start */}
+        <link rel="dns-prefetch" href="https://api.groq.com" />
+        <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
+        <link rel="preconnect" href="https://api.groq.com" crossOrigin="anonymous" />
+        {/* Mobile browser chrome color */}
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

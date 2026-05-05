@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Copy, Check, Edit2, Download, RefreshCw, X, Save, LayoutTemplate, Linkedin } from "lucide-react";
 import { Button } from "@/components/shadcn-ui/button";
 import { Textarea } from "@/components/shadcn-ui/textarea";
@@ -236,4 +236,4 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score, isStrea
   );
 };
 
-export default BioCard;
+export default React.memo(BioCard);

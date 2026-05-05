@@ -12,6 +12,9 @@ import { FileText, Sparkles, Download, Layers, Loader2 } from "lucide-react";
 import { Button } from "../shadcn-ui/button";
 import type { Platform } from "@/types";
 
+// Stable objects so React.memo on BioCard doesn't break on style prop identity
+const CARD_STYLES: React.CSSProperties[] = [0, 1, 2, 3].map((i) => ({ animationDelay: `${i * 90}ms` }));
+
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center gap-4 p-12 text-center opacity-60">
     <div className="relative">
@@ -45,7 +48,7 @@ const Output = () => {
   const characterLimit = platformConfig?.characterLimit ?? 200;
 
   useEffect(() => {
-    if (bios.length > 0 && window.innerWidth < 840) {
+    if (bios.length > 0) {
       outputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [bios]);
@@ -122,7 +125,7 @@ const Output = () => {
                     characterLimit={characterLimit}
                     score={bio.score}
                     isStreaming={loading}
-                    style={{ animationDelay: `${index * 90}ms` }}
+                    style={CARD_STYLES[index]}
                   />
                 ) : loading ? (
                   <BioCardSkeleton key={index} />
