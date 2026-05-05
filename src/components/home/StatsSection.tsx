@@ -10,9 +10,9 @@ interface Stat {
 }
 
 const STATS: Stat[] = [
-  { end: 4, label: "bio options generated" },
+  { end: 4, label: "bios per generation" },
   { end: 5, label: "target platforms" },
-  { end: 3, label: "AI models" },
+  { end: 8, label: "AI models" },
   { end: 0, label: "signup required", isZero: true },
 ];
 

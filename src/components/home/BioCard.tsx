@@ -178,6 +178,7 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score, isStrea
             </>
           ) : (
             <>
+              {/* Primary actions */}
               <Button ref={copyButtonRef} size="icon" variant="ghost" className="h-7 w-7" onClick={handleCopy} aria-label={`Copy bio ${index + 1}`}>
                 {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
               </Button>
@@ -200,6 +201,11 @@ const BioCard = ({ text, index, edited, platform, characterLimit, score, isStrea
               <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => exportSingleBio(text, index)} aria-label={`Download bio ${index + 1}`}>
                 <Download className="w-3.5 h-3.5" />
               </Button>
+
+              {/* Divider before share actions */}
+              <span className="w-px h-4 bg-border mx-0.5 shrink-0" aria-hidden="true" />
+
+              {/* Share actions */}
               <ShareBioButton text={text} />
               <Button
                 size="icon"

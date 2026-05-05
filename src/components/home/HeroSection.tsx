@@ -1,7 +1,7 @@
 import AnimatedGradientText from "@/components/magicui/animated-gradient-text";
 import { Sparkles } from "lucide-react";
 
-const PILLS = ["5 Platforms", "6 Tones", "3 AI Models", "Free Forever"];
+const PILLS = ["5 Platforms", "6 Tones", "8 AI Models", "Free Forever"];
 
 export function HeroSection() {
   return (

@@ -1,6 +1,5 @@
 "use client";
 import React, { useRef, useEffect } from "react";
-import { Badge } from "../shadcn-ui/badge";
 import { BorderBeam } from "../magicui/border-beam";
 import { useBioStore, PLATFORMS } from "@/store/bioStore";
 import BioCardSkeleton, { BioCardSkeletons } from "./BioCardSkeleton";
@@ -59,9 +58,6 @@ const Output = () => {
         {loading && (
           <BorderBeam size={1200} borderWidth={1.5} duration={4} className="z-10" aria-hidden="true" />
         )}
-        <Badge variant="outline" className="absolute top-3 right-3 z-50">
-          Output
-        </Badge>
 
         {loading && bios.every((b) => !b.text) ? (
           <BioCardSkeletons />

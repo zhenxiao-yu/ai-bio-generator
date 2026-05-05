@@ -13,10 +13,10 @@ import { SharedBioModal } from "@/components/home/SharedBioModal";
 export default function Home() {
   return (
     <>
-      {/* Skip-nav for accessibility */}
+      {/* Skip-nav — keyboard only, hidden off-screen until focused */}
       <a
         href="#output"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded"
+        className="fixed left-4 top-0 -translate-y-full z-[60] px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-b-lg shadow-lg transition-transform duration-150 focus-visible:translate-y-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         Skip to results
       </a>
