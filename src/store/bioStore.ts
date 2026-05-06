@@ -25,6 +25,7 @@ interface BioState {
   loading: boolean;
   error: string | null;
   errorCode: GenerateErrorCode | null;
+  retryAfter: number | null;
   abortController: AbortController | null;
   theme: Theme;
   lastPayload: GeneratePayload | null;
@@ -91,6 +92,7 @@ export const useBioStore = create<BioState & BioActions>()(
       loading: false,
       error: null,
       errorCode: null,
+      retryAfter: null,
       abortController: null,
       theme: "light",
       lastPayload: null,
@@ -125,12 +127,14 @@ export const useBioStore = create<BioState & BioActions>()(
             const json = (await res.json().catch(() => ({}))) as {
               error?: string;
               code?: GenerateErrorCode;
+              retryAfter?: number;
             };
             set({
               loading: false,
               bios: [],
               error: json.error ?? "Generation failed.",
               errorCode: json.code ?? "UNKNOWN",
+              retryAfter: json.retryAfter ?? null,
               abortController: null,
             });
             return;
@@ -162,6 +166,7 @@ export const useBioStore = create<BioState & BioActions>()(
                     bios: [],
                     error: partial.__error.error,
                     errorCode: (partial.__error.code as GenerateErrorCode) ?? "UNKNOWN",
+                    retryAfter: null,
                     abortController: null,
                   });
                   break outer;
@@ -208,6 +213,7 @@ export const useBioStore = create<BioState & BioActions>()(
               bios: [],
               error: "Something went wrong. Please try again.",
               errorCode: "UNKNOWN",
+              retryAfter: null,
               abortController: null,
             });
           }
@@ -243,7 +249,7 @@ export const useBioStore = create<BioState & BioActions>()(
         set({ abortController: null, loading: false });
       },
 
-      clearError: () => set({ error: null, errorCode: null }),
+      clearError: () => set({ error: null, errorCode: null, retryAfter: null }),
 
       toggleTheme: () => {
         const newTheme = get().theme === "light" ? "dark" : "light";

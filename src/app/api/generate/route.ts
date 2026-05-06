@@ -32,7 +32,7 @@ function getAIModel(modelId: string) {
 const requestSchema = z.object({
   model: z.string().min(1),
   temperature: z.number().min(0).max(2),
-  content: z.string().min(20).max(500),
+  content: z.string().trim().min(20).max(500),
   type: z.enum(["personal", "brand"]),
   tone: z.enum(["professional", "passionate", "thoughtful", "casual", "sarcastic", "funny"]),
   emojis: z.boolean(),

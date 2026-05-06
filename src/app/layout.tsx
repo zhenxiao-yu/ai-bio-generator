@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/shadcn-ui/tooltip";
 import GridPattern from "@/components/magicui/grid-pattern";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/home/CommandPalette";
+import OfflineBanner from "@/components/layout/OfflineBanner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import {
@@ -115,6 +116,7 @@ export default function RootLayout({
         <TooltipProvider>
           {children}
           <CommandPalette />
+          <OfflineBanner />
           <Toaster position="top-right" richColors closeButton />
         </TooltipProvider>
         <Analytics />
