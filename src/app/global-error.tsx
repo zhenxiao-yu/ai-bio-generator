@@ -37,12 +37,12 @@ export default function GlobalError({
             >
               Try again
             </button>
-            <a
-              href="/"
+            <button
+              onClick={() => { window.location.href = "/"; }}
               className="px-4 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
             >
               Go home
-            </a>
+            </button>
           </div>
         </div>
       </body>
