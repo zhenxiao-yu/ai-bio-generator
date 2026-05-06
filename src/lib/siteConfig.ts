@@ -3,7 +3,7 @@
  * Update SITE_URL here after the custom domain is confirmed in Vercel.
  */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://bioloom.is-a.dev";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://ai-bio-generator-steel.vercel.app";
 
 export const SITE_NAME = "BioLoom";
 export const SITE_TAGLINE = "AI-Powered Bio Generator";

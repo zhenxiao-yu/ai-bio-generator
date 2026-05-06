@@ -1,7 +1,7 @@
 # BioLoom — AI Bio Generator
 
 **Author:** Zhenxiao (Mark) Yu  
-**Live demo:** [bioloom.is-a.dev](https://bioloom.is-a.dev)
+**Live demo:** [ai-bio-generator-steel.vercel.app](https://ai-bio-generator-steel.vercel.app)
 
 Generate 4 unique, platform-optimized professional bios in seconds. 8 AI models, 5 platforms, 6 tones. Free forever — no signup required.
 

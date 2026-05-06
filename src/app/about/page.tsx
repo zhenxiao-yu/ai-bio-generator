@@ -164,11 +164,13 @@ vercel
     step: "06",
     title: "Optional: custom domain",
     description:
-      "In Vercel → Project → Settings → Domains, add your domain. For a free subdomain like this site uses, visit is-a.dev and open a GitHub PR.",
-    code: `# If using is-a.dev (free .is-a.dev subdomain):
-# 1. Fork https://github.com/is-a-dev/register
-# 2. Add domains/your-name.json pointing to your Vercel deployment
-# 3. Open a PR — approved in ~24 hours`,
+      "In Vercel → Project → Settings → Domains, add your own domain. Point your DNS CNAME to cname.vercel-dns.com and Vercel handles SSL automatically.",
+    code: `# Add a custom domain in Vercel:
+# 1. Vercel Dashboard → Your Project → Settings → Domains
+# 2. Enter your domain (e.g. mybio.com or sub.mybio.com)
+# 3. Add a CNAME record at your DNS provider:
+#    CNAME  @  cname.vercel-dns.com
+# 4. SSL certificate is issued automatically (~60s)`,
   },
 ];
 

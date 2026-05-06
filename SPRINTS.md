@@ -1,6 +1,6 @@
 # BioLoom — Sprint Roadmap
 
-**Current state**: Production-ready, deployed at [bioloom.is-a.dev](https://bioloom.is-a.dev)  
+**Current state**: Production-ready, deployed at [ai-bio-generator-steel.vercel.app](https://ai-bio-generator-steel.vercel.app)  
 **Stack**: Next.js 15, Vercel AI SDK v4, Groq + Gemini, Zustand, Tailwind CSS
 
 ---

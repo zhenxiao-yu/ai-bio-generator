@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://bioloom.is-a.dev/sitemap.xml
+Sitemap: https://ai-bio-generator-steel.vercel.app/sitemap.xml
