@@ -192,7 +192,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. In short:
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Released under the [MIT License](LICENSE).
 
 ---
 

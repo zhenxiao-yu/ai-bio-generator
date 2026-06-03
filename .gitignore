@@ -13,6 +13,7 @@
 /.next/
 /out/
 /build
+/dist
 
 # Local env files and secrets
 .env
